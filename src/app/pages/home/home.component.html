@@ -1,0 +1,85 @@
+<div class="container">
+  <!-- Hero -->
+  <section class="row g-4 align-items-center">
+    <div class="col-lg-7">
+      <span class="badge rounded-pill text-bg-light px-3 py-2 mb-3">Aprendizaje Automático</span>
+      <h1 class="display-5 fw-bold">Introducción al Aprendizaje Automático</h1>
+      <p class="lead text-secondary">
+        Una guía para principiantes sobre los conceptos básicos y algoritmos del aprendizaje automático.
+      </p>
+      <a routerLink="/articulos" class="btn btn-primary btn-lg rounded-3">Leer más</a>
+    </div>
+    <div class="col-lg-5">
+      <img class="img-fluid rounded-4 shadow-sm" src="/hero.jpg" alt="Código en pantalla">
+    </div>
+  </section>
+
+  <!-- Últimos artículos -->
+  <section class="mt-5">
+    <h2 class="h3 mb-3">Últimos Artículos</h2>
+
+    <div class="row g-4">
+      <!-- Card 1 -->
+      <div class="col-md-4">
+        <article class="card h-100 shadow-sm">
+          <img src="/python-card.jpg" class="card-img-top" alt="Python">
+          <div class="card-body">
+            <span class="badge rounded-pill text-bg-light mb-2">Common Terms</span>
+            <h3 class="h5">Glosario básico de IA (Paso 1)</h3>
+            <div class="text-secondary small mb-2">20 de marzo de 2025</div>
+            <p class="card-text">Definiciones claras de LLM, embeddings, RAG, prompt engineering y más, con ejemplos sencillos.</p>
+          </div>
+        </article>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="col-md-4">
+        <article class="card h-100 shadow-sm">
+          <img src="/rest-card.jpg" class="card-img-top" alt="Código">
+          <div class="card-body">
+            <span class="badge rounded-pill text-bg-light mb-2">Common Terms</span>
+            <h3 class="h5">¿Qué es un LLM?</h3>
+            <div class="text-secondary small mb-2">Próximamente</div>
+            <p class="card-text">Qué son los Large Language Models, para qué sirven y cómo se usan en aplicaciones web.</p>
+          </div>
+        </article>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="col-md-4">
+        <article class="card h-100 shadow-sm">
+          <img src="/responsive-card.jpg" class="card-img-top" alt="UI">
+          <div class="card-body">
+            <span class="badge rounded-pill text-bg-light mb-2">Common Terms</span>
+            <h3 class="h5">RAG en una frase</h3>
+            <div class="text-secondary small mb-2">Próximamente</div>
+            <p class="card-text">Cómo la generación aumentada por recuperación mejora las respuestas con tus propios datos.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chips de categorías -->
+  <section class="mt-5">
+    <div class="row g-3">
+      <div class="col-12 col-md-4"><a class="btn btn-light w-100 py-3 shadow-sm">IA</a></div>
+      <div class="col-12 col-md-4"><a class="btn btn-light w-100 py-3 shadow-sm">Desarrollo</a></div>
+      <div class="col-12 col-md-4"><a class="btn btn-light w-100 py-3 shadow-sm">Python</a></div>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section id="boletin" class="mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm">
+    <h3 class="h4">Suscríbete a nuestro boletín</h3>
+    <p class="text-secondary">Recibe los últimos artículos hasta tu bandeja de entrada.</p>
+    <form class="row g-3" (submit)="$event.preventDefault()">
+      <div class="col-md-9">
+        <input type="email" class="form-control form-control-lg" placeholder="Ingresa tu correo">
+      </div>
+      <div class="col-md-3 d-grid">
+        <button class="btn btn-primary btn-lg">Suscribirse</button>
+      </div>
+    </form>
+  </section>
+</div>
