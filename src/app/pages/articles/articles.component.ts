@@ -19,7 +19,7 @@ export class ArticlesComponent implements OnInit {
   async ngOnInit() {
     this.loading = true;
     const { data, error } = await this.supabase.getPosts();
-    if (error) this.errorMsg = error.message;
+    if (error) this.errorMsg = error.message ?? 'Unknown error';
     this.posts = data ?? [];
     this.loading = false;
   }
