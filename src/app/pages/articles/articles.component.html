@@ -1,1 +1,19 @@
-<p>articles works!</p>
+<!-- src/app/pages/articles/articles.component.html -->
+<div class="container py-4">
+  <h2 class="mb-4">Artículos</h2>
+
+  <div *ngIf="loading">Cargando…</div>
+  <div *ngIf="!loading && errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+  <div *ngIf="!loading && posts.length === 0" class="text-muted">No hay artículos todavía.</div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4" *ngFor="let post of posts">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ post.title }}</h5>
+          <p class="card-text">{{ post.content }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
