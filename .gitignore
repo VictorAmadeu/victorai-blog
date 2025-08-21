@@ -60,3 +60,6 @@ pnpm-debug.log*
 # SO
 .DS_Store
 Thumbs.db
+
+/src/environments
+src/environments/environment.prod.ts
