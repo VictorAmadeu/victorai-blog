@@ -1,17 +1,28 @@
-<header class="bg-white border-bottom">
-  <nav class="navbar navbar-expand-lg container py-3">
-    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
-      <img src="assets/img/avatar.png" alt="Logo" width="36" height="36" class="rounded-circle border">
+<nav class="navbar navbar-expand-lg bg-white border-bottom">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" routerLink="/">
+      <img src="assets/img/avatar.png" alt="Logo" width="44" height="44" class="rounded-circle border">
       <span class="fw-semibold">Victor Amadeu - AI Blog</span>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+    <!-- Botón hamburguesa para móviles -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#nav"
+      aria-controls="nav"
+      aria-expanded="false"
+      aria-label="Mostrar navegación"
+      (click)="autoCloseMenu()">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="nav" class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
-        <li class="nav-item"><a routerLink="/" routerLinkActive="active" class="nav-link">Inicio</a></li>
+        <li class="nav-item">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">Inicio</a>
+        </li>
         <li class="nav-item"><a routerLink="/articulos" routerLinkActive="active" class="nav-link">Artículos</a></li>
         <li class="nav-item"><a routerLink="/categorias" routerLinkActive="active" class="nav-link">Categorías</a></li>
         <li class="nav-item"><a routerLink="/sobre-mi" routerLinkActive="active" class="nav-link">Sobre mí</a></li>
@@ -20,20 +31,53 @@
         </li>
       </ul>
     </div>
-  </nav>
-</header>
+  </div>
+</nav>
 
 <main class="py-4 py-md-5 bg-body-tertiary">
   <router-outlet></router-outlet>
 </main>
 
 <footer class="border-top py-4">
-  <div class="container small text-secondary d-flex flex-wrap gap-3 justify-content-between">
-    <div>© {{ currentYear }} VictorAI Blog · Todos los derechos reservados.</div>
-    <div class="d-flex gap-3">
-      <a class="link-secondary" href="#" aria-label="Twitter">🐦</a>
-      <a class="link-secondary" href="#" aria-label="GitHub">💻</a>
-      <a class="link-secondary" href="#" aria-label="LinkedIn">🔗</a>
+  <div class="container small text-secondary d-flex flex-wrap gap-3 justify-content-between align-items-center">
+    <div>© {{ currentYear }} Victor Amadeu - AI Blog · Todos los derechos reservados.</div>
+
+    <div class="d-flex gap-2">
+      <!-- LinkedIn -->
+      <a class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+         href="https://www.linkedin.com/in/victor-amadeu-braga-heleno"
+         target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="1" y="1" width="22" height="22" rx="3" fill="#0A66C2"/>
+          <rect x="5" y="9" width="3" height="10" fill="#ffffff"/>
+          <circle cx="6.5" cy="6.5" r="1.7" fill="#ffffff"/>
+          <path d="M14 9c-2 0-3 .8-3 3v7h3v-6c0-1 .7-1.6 1.7-1.6 1.1 0 1.8.7 1.8 1.7V19H21v-6.1C21 10.6 19.5 9 17.3 9c-1.1 0-2 .4-2.6 1z" fill="#ffffff"/>
+        </svg>
+        <span>LinkedIn</span>
+      </a>
+
+      <!-- GitHub -->
+      <a class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+         href="https://github.com/VictorAmadeu"
+         target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path fill="currentColor"
+            d="M8 .2a8 8 0 0 0-2.53 15.6c.4.07.55-.17.55-.38v-1.34c-2.26.49-2.73-1.09-2.73-1.09-.36-.93-.88-1.18-.88-1.18-.72-.5.05-.49.05-.49.8.06 1.22.83 1.22.83.71 1.21 1.86.86 2.31.66.07-.52.28-.86.5-1.06-1.8-.21-3.69-.9-3.69-4 0-.88.31-1.6.82-2.16-.08-.2-.36-1.02.08-2.12 0 0 .68-.22 2.22.82a7.7 7.7 0 0 1 4.04 0c1.54-1.04 2.22-.82 2.22-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.16 0 3.11-1.9 3.79-3.71 4 .29.25.55.74.55 1.49v2.21c0 .21.15.46.56.38A8 8 0 0 0 8 .2Z"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+
+      <!-- Portafolio (Vue) -->
+      <a class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+         href="https://victoramadeu.github.io/portafolio-vue/#/"
+         target="_blank" rel="noopener noreferrer" aria-label="Portafolio (Vue)">
+        <svg width="16" height="16" viewBox="0 0 261.76 226.69" aria-hidden="true">
+          <!-- Vue logo simplificado -->
+          <path d="M130.88 0L98.16 56.67 65.44 0H0l130.88 226.69L261.76 0h-65.44l-32.72 56.67L130.88 0z" fill="#41B883"/>
+          <path d="M130.88 0l-32.72 56.67L65.44 0H32.72l98.16 170.02L229.04 0h-32.72l-32.72 56.67L130.88 0z" fill="#35495E"/>
+        </svg>
+        <span>Portafolio</span>
+      </a>
     </div>
   </div>
 </footer>

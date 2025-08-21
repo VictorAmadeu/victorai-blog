@@ -1,0 +1,7 @@
+/* Centra y limita suavemente la foto en móviles */
+.about-photo {
+  max-width: 320px;   /* tamaño agradable en móvil */
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
