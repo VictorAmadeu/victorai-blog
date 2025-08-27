@@ -1,0 +1,35 @@
+[
+  {
+    "id": "clase-01",
+    "titulo": "Clase 01 – Primer script",
+    "descripcion": "Hola mundo, versión de Python y primeras operaciones.",
+    "archivos": [
+      {
+        "nombre": "main.py",
+        "ruta": "assets/python-exercises/clase-01/main.py"
+      }
+    ]
+  },
+  {
+    "id": "clase-04",
+    "titulo": "Clase 04 – Formulario interactivo",
+    "descripcion": "Input de usuario, casting a números y fechas.",
+    "archivos": [
+      {
+        "nombre": "ejercicio_clase_04.py",
+        "ruta": "assets/python-exercises/clase-04/ejercicio_clase_04.py"
+      }
+    ]
+  },
+  {
+    "id": "clase-05",
+    "titulo": "Clase 05 – Saludador Interactivo",
+    "descripcion": "Mostrar 'Hola, mundo', pedir el nombre del usuario y saludarlo de forma personalizada.",
+    "archivos": [
+      {
+        "nombre": "ex001_saludador.py",
+        "ruta": "assets/python-exercises/clase-05/ex001_saludador.py"
+      }
+    ]
+  }
+]

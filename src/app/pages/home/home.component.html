@@ -1,65 +1,86 @@
+<!-- Contenedor del hero (texto + imagen) -->
 <div class="container py-5">
   <div class="row align-items-center g-4">
-    <!-- Texto -->
+    <!-- Columna de texto -->
     <div class="col-12 col-lg-6">
       <h1 class="display-5 fw-bold">Victor Amadeu AI Blog</h1>
+
+      <!-- Párrafo introductorio -->
       <p class="lead">
         La Inteligencia Artificial (IA) ha dejado de ser un concepto exclusivo de la ciencia ficción para convertirse en una de las tecnologías más influyentes de nuestro tiempo. Desde los asistentes virtuales que utilizamos a diario hasta los algoritmos que recomiendan películas, diagnostican enfermedades o impulsan la conducción autónoma, la IA está transformando la forma en que vivimos, trabajamos y nos relacionamos.
       </p>
 
+      <!-- Párrafo sobre el propósito del blog -->
       <p class="lead">
         Este blog nace con el propósito de acercar el mundo de la Inteligencia Artificial a todos los públicos, ya sean estudiantes, profesionales del sector tecnológico o personas curiosas por comprender cómo funciona esta revolución digital. Aquí encontrarás artículos explicativos, análisis de tendencias, tutoriales prácticos y reflexiones sobre los impactos sociales, éticos y económicos que acompañan a esta tecnología.
       </p>
 
+      <!-- Párrafo final del hero -->
       <p class="lead mb-3">
         El objetivo es claro: informar, inspirar y fomentar el pensamiento crítico sobre la IA, entendiendo no solo su potencial, sino también sus límites y desafíos. Porque hablar de Inteligencia Artificial no es hablar solo de máquinas, sino también del futuro de la humanidad.
       </p>
+
+      <!-- Botones principales del hero -->
       <div class="d-flex gap-2 flex-wrap">
+        <!-- Enlace a artículos -->
         <a class="btn btn-primary" routerLink="/articulos">Ver artículos</a>
+        <!-- Enlace a sobre mí -->
         <a class="btn btn-outline-secondary" routerLink="/sobre-mi">Sobre mí</a>
       </div>
     </div>
 
-    <!-- Imagen -->
+    <!-- Columna de imagen del hero -->
     <div class="col-12 col-lg-6 text-center">
-      <img src="assets/img/hero.jpg" class="img-fluid rounded w-100" alt="Hero" loading="lazy" style="max-height:480px; object-fit:cover;">
+      <img
+        src="assets/img/hero.jpg"
+        class="img-fluid rounded w-100"
+        alt="Hero"
+        loading="lazy"
+        style="max-height:480px; object-fit:cover;">
     </div>
   </div>
 </div>
 
+<!-- Bloque de “Últimos Artículos” -->
 <div class="container pb-5">
   <h2 class="h3 mb-3">Últimos Artículos</h2>
+
   <div class="row g-4">
-    <!-- Card 1 -->
+    <!-- Card 1: IA práctica -->
     <div class="col-12 col-md-4">
       <div class="card h-100 shadow-sm">
-        <img src="assets/img/inteligencia-artificial.jpg" class="card-img-top" alt="Python Card" loading="lazy">
+        <img src="assets/img/inteligencia-artificial.jpg" class="card-img-top" alt="IA práctica" loading="lazy">
         <div class="card-body">
           <h5 class="card-title">IA práctica</h5>
           <p class="card-text">Proyectos paso a paso con modelos pre-entrenados.</p>
+          <!-- Enlace a la lista de artículos -->
           <a class="btn btn-sm btn-outline-primary stretched-link" routerLink="/articulos" aria-label="Ir a artículos">Leer más</a>
         </div>
       </div>
     </div>
-    <!-- Card 2 -->
+
+    <!-- Card 2: Conceptos de IA -->
     <div class="col-12 col-md-4">
       <div class="card h-100 shadow-sm">
-        <img src="assets/img/responsive-card.jpg" class="card-img-top" alt="Responsive" loading="lazy">
+        <img src="assets/img/responsive-card.jpg" class="card-img-top" alt="Conceptos de IA" loading="lazy">
         <div class="card-body">
           <h5 class="card-title">Conceptos de la Inteligencia Artificial</h5>
           <p class="card-text">Glosario de conceptos de IA.</p>
+          <!-- Enlace a categorías -->
           <a class="btn btn-sm btn-outline-primary stretched-link" routerLink="/categorias" aria-label="Ir a categorías">Leer más</a>
         </div>
       </div>
     </div>
-    <!-- Card 3 -->
+
+    <!-- Card 3: Python (✅ Conectada a /python) -->
     <div class="col-12 col-md-4">
       <div class="card h-100 shadow-sm">
-        <img src="assets/img/python-card.jpg" class="card-img-top" alt="REST" loading="lazy">
+        <img src="assets/img/python-card.jpg" class="card-img-top" alt="Python" loading="lazy">
         <div class="card-body">
           <h5 class="card-title">Python</h5>
           <p class="card-text">Ejercicios de Python.</p>
-          <a class="btn btn-sm btn-outline-primary stretched-link" routerLink="/sobre-mi" aria-label="Ir a sobre mí">Leer más</a>
+          <!-- 🔗 Cambio clave: ahora navega a /python -->
+          <a class="btn btn-sm btn-outline-primary stretched-link" routerLink="/python" aria-label="Ir a ejercicios de Python">Leer más</a>
         </div>
       </div>
     </div>
@@ -69,20 +90,34 @@
 <!-- Chips de categorías -->
 <section class="container mt-5">
   <div class="row g-3">
-    <div class="col-12 col-md-4"><a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">IA</a></div>
-    <div class="col-12 col-md-4"><a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">Desarrollo</a></div>
-    <div class="col-12 col-md-4"><a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">Python</a></div>
+    <!-- Chip a categorías: IA -->
+    <div class="col-12 col-md-4">
+      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">IA</a>
+    </div>
+
+    <!-- Chip a categorías: Desarrollo -->
+    <div class="col-12 col-md-4">
+      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">Desarrollo</a>
+    </div>
+
+    <!-- Chip de Python (✅ opcionalmente directo a /python para acceso rápido) -->
+    <div class="col-12 col-md-4">
+      <!-- Si prefieres mandar a categorías, deja /categorias; aquí lo apuntamos a /python -->
+      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/python">Python</a>
+    </div>
   </div>
 </section>
 
-<!-- Newsletter -->
+<!-- Sección de Newsletter -->
 <section id="boletin" class="container mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm">
   <h3 class="h4">Suscríbete a nuestro boletín</h3>
   <p class="text-secondary">Recibe los últimos artículos hasta tu bandeja de entrada.</p>
 
-  <!-- Habilitado: usa FormsModule + handler -->
+  <!-- Formulario template-driven (ngForm + ngModel). 
+       Requiere FormsModule importado en el componente TS. -->
   <form class="row g-3 align-items-stretch" (ngSubmit)="onSubscribe()" #newsletterForm="ngForm">
     <div class="col-12 col-md-9">
+      <!-- Campo email enlazado a newsletterEmail (two-way binding) -->
       <input
         type="email"
         class="form-control form-control-lg"
@@ -92,6 +127,8 @@
         required
         email>
     </div>
+
+    <!-- Botón de envío con estado de carga -->
     <div class="col-12 col-md-3 d-grid">
       <button class="btn btn-primary btn-lg" type="submit" [disabled]="loading || !newsletterEmail">
         {{ loading ? 'Enviando…' : 'Suscribirse' }}

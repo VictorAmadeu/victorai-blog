@@ -1,0 +1,17 @@
+<div class="container py-4">
+  <h1 class="mb-3">Ejercicios de Python 🐍</h1>
+
+  <div *ngIf="cargando" class="alert alert-info">Cargando...</div>
+
+  <div class="row g-3" *ngIf="!cargando">
+    <div class="col-12 col-md-6 col-lg-4" *ngFor="let e of ejercicios">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ e.titulo }}</h5>
+          <p class="card-text">{{ e.descripcion }}</p>
+          <a [routerLink]="['/python', e.id]" class="btn btn-primary">Ver ejercicio</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

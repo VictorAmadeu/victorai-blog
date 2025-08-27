@@ -1,0 +1,32 @@
+<div class="container py-4" *ngIf="ejercicio; else errorTpl">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/python">Python</a></li>
+      <li class="breadcrumb-item active">{{ ejercicio.titulo }}</li>
+    </ol>
+  </nav>
+
+  <h1 class="mb-2">{{ ejercicio.titulo }} ✨</h1>
+  <p class="text-muted">{{ ejercicio.descripcion }}</p>
+
+  <div *ngIf="cargando" class="alert alert-info">Cargando archivos…</div>
+
+  <!-- 👇 OJO: aquí usamos 'archivos' (no 'contenidos') -->
+  <div *ngFor="let f of archivos; trackBy: trackByNombre" class="mb-4">
+    <h5 class="mb-2">{{ f.nombre }}</h5>
+
+    <!-- ✅ Directiva [highlight] reconocida al importar HighlightModule en el TS -->
+    <!-- ❌ Quitamos [lineNumbers]; si los quieres, te paso el plugin específico. -->
+    <pre><code [highlight]="f.codigo" language="python"></code></pre>
+  </div>
+</div>
+
+<ng-template #errorTpl>
+  <div class="container py-4">
+    <div class="alert alert-danger" *ngIf="error; else noData"> {{ error }} </div>
+    <ng-template #noData>
+      <div class="alert alert-warning">No hay datos del ejercicio.</div>
+    </ng-template>
+    <a routerLink="/python" class="btn btn-outline-secondary btn-sm mt-2">← Volver</a>
+  </div>
+</ng-template>
