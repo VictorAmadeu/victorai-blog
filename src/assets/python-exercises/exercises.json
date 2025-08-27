@@ -6,7 +6,8 @@
     "archivos": [
       {
         "nombre": "main.py",
-        "ruta": "assets/python-exercises/clase-01/main.py"
+        "ruta": "assets/python-exercises/clase-01/main.py",
+        "salida": "== Información del intérprete ==\nVersión: 3.11.x (puede variar en tu equipo)\nEjecutable: C:\\\\ruta\\\\a\\\\python.exe (tu_equipo)\n\n== Hola y operaciones ==\nHola, mundo 👋\n2 + 5 = 7\n7 * 6 = 42\n\nThe Zen of Python, by Tim Peters\nBeautiful is better than ugly.\nExplicit is better than implicit.\nSimple is better than complex.\nComplex is better than complicated.\nFlat is better than nested.\nSparse is better than dense.\nReadability counts.\nSpecial cases aren't special enough to break the rules.\nAlthough practicality beats purity.\nErrors should never pass silently.\nUnless explicitly silenced.\nIn the face of ambiguity, refuse the temptation to guess.\nThere should be one-- and preferably only one --obvious way to do it.\nAlthough that way may not be obvious at first unless you're Dutch.\nNow is better than never.\nAlthough never is often better than *right* now.\nIf the implementation is hard to explain, it's a bad idea.\nIf the implementation is easy to explain, it may be a good idea.\nNamespaces are one honking great idea -- let's do more of those!\n\nScript ejecutado correctamente ✅"
       }
     ]
   },
@@ -17,7 +18,8 @@
     "archivos": [
       {
         "nombre": "ejercicio_clase_04.py",
-        "ruta": "assets/python-exercises/clase-04/ejercicio_clase_04.py"
+        "ruta": "assets/python-exercises/clase-04/ejercicio_clase_04.py",
+        "salida": "¿Cuál es tu nombre? Victor\n¿Cuántos años tienes? 25\n¿Cuánto pesas? (puedes usar punto o coma) 70,5\nHola Victor, ¡placer en conocerte! 🤖\nEdad registrada: 25 años | Peso registrado: 70.5 kg\nDía de nacimiento (número): 30\nMes de nacimiento (número o nombre): 01\nAño de nacimiento (4 dígitos): 2000\nNaciste el día 30 de enero de 2000 ¿correcto? 🗓️\nEscribe un número: 6\nEscribe otro número: 3\nDemostración (sin conversión): 63\nLa suma correcta es: 9.0"
       }
     ]
   },
@@ -28,7 +30,8 @@
     "archivos": [
       {
         "nombre": "ex001_saludador.py",
-        "ruta": "assets/python-exercises/clase-05/ex001_saludador.py"
+        "ruta": "assets/python-exercises/clase-05/ex001_saludador.py",
+        "salida": "Hola, mundo 👋\n¿Cuál es tu nombre? Victor\nEs un placer conocerte, Victor."
       }
     ]
   }

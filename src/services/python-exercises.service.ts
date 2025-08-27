@@ -1,63 +1,75 @@
-// Servicio Angular para gestionar los ejercicios de Python (catálogo y lectura de archivos).
+// Servicio Angular para gestionar los ejercicios de Python:
+// - Lee el catálogo (exercises.json)
+// - Lee el contenido de los .py como texto plano
 
-// @Injectable: permite que esta clase se use como servicio inyectable en otros componentes/clases.
+// @Injectable: permite usar esta clase como servicio inyectable.
 import { Injectable } from '@angular/core';
 
-// HttpClient: cliente HTTP que usaremos para leer JSON y archivos .py desde assets/.
+// HttpClient: cliente HTTP para leer JSON y archivos desde /assets.
 import { HttpClient } from '@angular/common/http';
 
-// map: operador de RxJS que nos permite transformar el resultado de un observable.
+// Operador map de RxJS para transformar flujos.
 import { map } from 'rxjs/operators';
 
-// Observable: tipo de RxJS para manejar respuestas asincrónicas (peticiones HTTP).
+// Observable: tipo base para respuestas asíncronas (peticiones HTTP).
 import { Observable } from 'rxjs';
 
-// ====== Interfaces (tipos) ======
-// PythonFile: representa un archivo suelto (por ejemplo, un main.py dentro de una clase).
+// ========= Interfaces (modelos de datos) =========
+
+// Representa un archivo del ejercicio (p. ej., main.py).
 export interface PythonFile {
-  nombre: string; // Nombre del archivo (ej.: "main.py").
-  ruta: string; // Ruta relativa dentro de assets (ej.: "assets/python-exercises/clase-01/main.py").
+  nombre: string; // Nombre visible del archivo (ej.: "main.py").
+  ruta: string; // Ruta dentro de /assets (ej.: "assets/python-exercises/clase-01/main.py").
+  salida?: string; // ✅ OPCIONAL: texto con la "salida esperada" a mostrar bajo el código.
 }
 
-// PythonExercise: representa un ejercicio completo, que puede tener varios archivos.
+// Representa un ejercicio completo, que puede incluir varios archivos.
 export interface PythonExercise {
-  id: string; // Identificador único (ej.: "clase-01").
-  titulo: string; // Título para mostrar en la tarjeta.
-  descripcion: string; // Breve descripción del ejercicio.
-  archivos: PythonFile[]; // Lista de archivos asociados a este ejercicio.
+  id: string; // Identificador único (se usa también en la URL: /python/:id).
+  titulo: string; // Título mostrado en tarjetas y detalle.
+  descripcion: string; // Descripción breve para contexto.
+  archivos: PythonFile[]; // Lista de archivos asociados al ejercicio.
 }
 
-// ====== Servicio ======
-@Injectable({ providedIn: 'root' }) // 'providedIn: root' → disponible en toda la app sin necesidad de registrarlo en providers.
+// ========= Servicio =========
+@Injectable({ providedIn: 'root' }) // Disponible en toda la app sin declararlo en providers.
 export class PythonExercisesService {
-  // URL del catálogo JSON con la lista de ejercicios.
-  // Este archivo lo mantenemos en assets/python-exercises/exercises.json.
-  private jsonUrl = 'assets/python-exercises/exercises.json';
+  // Ruta del catálogo JSON (servido de forma estática por Angular desde /assets).
+  private readonly jsonUrl = 'assets/python-exercises/exercises.json';
 
-  // Constructor: inyectamos HttpClient para poder usarlo en los métodos del servicio.
+  // Inyectamos HttpClient para poder realizar peticiones HTTP.
   constructor(private http: HttpClient) {}
 
-  // Método listar():
-  // - Devuelve un Observable con la lista completa de ejercicios.
-  // - Usa HttpClient.get() tipado como PythonExercise[].
+  /**
+   * Devuelve la lista completa de ejercicios del catálogo.
+   * Tipamos la respuesta como PythonExercise[] para tener autocompletado y validación de tipos.
+   */
   listar(): Observable<PythonExercise[]> {
     return this.http.get<PythonExercise[]>(this.jsonUrl);
   }
 
-  // Método obtener():
-  // - Busca un ejercicio concreto por su id (ej.: "clase-01").
-  // - Primero llama a listar() para obtener todos, y luego usa map() para encontrar el que coincida.
+  /**
+   * Obtiene un único ejercicio por su id.
+   * Implementación simple: reutiliza listar() y hace un find en memoria.
+   * (Para catálogos pequeños en /assets es suficiente y muy legible).
+   */
   obtener(id: string): Observable<PythonExercise | undefined> {
     return this.listar().pipe(
-      map((arr) => arr.find((e) => e.id === id)) // Si no encuentra nada, devuelve undefined.
+      map((arr) => arr.find((e) => e.id === id)) // Si no lo encuentra → undefined.
     );
   }
 
-  // Método leerArchivoText():
-  // - Carga un archivo .py como texto plano.
-  // - Ejemplo: leerArchivoText("assets/python-exercises/clase-01/main.py").
-  // - La opción { responseType: 'text' } indica que no queremos JSON, sino texto puro.
+  /**
+   * Lee un archivo .py como TEXTO PLANO.
+   * ⚠️ Claves para evitar el error de overload:
+   *    - NO usar el genérico <string> en this.http.get(...).
+   *    - Forzar el literal del overload correcto: responseType: 'text' as 'text'.
+   * Con eso, HttpClient devuelve Observable<string> sin que TS lo confunda con 'json' o 'arraybuffer'.
+   */
   leerArchivoText(ruta: string): Observable<string> {
-    return this.http.get(ruta, { responseType: 'text' });
+    return this.http.get(ruta, {
+      responseType: 'text' as 'text', // ← fuerza el overload de texto
+      // observe: 'body'        // (opcional) también ayuda, pero no es necesario
+    });
   }
 }

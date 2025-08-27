@@ -1,32 +1,64 @@
+<!-- Contenedor principal del detalle.
+     *ngIf comprueba que ya tenemos los datos del ejercicio cargados.
+     Si no los hay, muestra la plantilla alternativa 'errorTpl'. -->
 <div class="container py-4" *ngIf="ejercicio; else errorTpl">
+  <!-- Breadcrumb de navegación: enlace de vuelta al listado y título actual. -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
+      <!-- routerLink usa la ruta /python definida en app.routes.ts -->
       <li class="breadcrumb-item"><a routerLink="/python">Python</a></li>
       <li class="breadcrumb-item active">{{ ejercicio.titulo }}</li>
     </ol>
   </nav>
 
+  <!-- Cabecera del ejercicio: título y descripción corta. -->
   <h1 class="mb-2">{{ ejercicio.titulo }} ✨</h1>
   <p class="text-muted">{{ ejercicio.descripcion }}</p>
 
+  <!-- Aviso mientras se cargan los archivos .py (bandera 'cargando' del TS). -->
   <div *ngIf="cargando" class="alert alert-info">Cargando archivos…</div>
 
-  <!-- 👇 OJO: aquí usamos 'archivos' (no 'contenidos') -->
+  <!-- Mensaje alternativo si NO hay archivos que mostrar y ya no estamos cargando. -->
+  <div *ngIf="!cargando && archivos.length === 0" class="alert alert-warning">
+    Este ejercicio no tiene archivos asociados todavía.
+  </div>
+
+  <!-- Recorremos la colección 'archivos' preparada en el TS.
+       trackBy mejora rendimiento usando el nombre como clave estable. -->
   <div *ngFor="let f of archivos; trackBy: trackByNombre" class="mb-4">
+    <!-- Nombre del archivo (por ejemplo: main.py) -->
     <h5 class="mb-2">{{ f.nombre }}</h5>
 
-    <!-- ✅ Directiva [highlight] reconocida al importar HighlightModule en el TS -->
-    <!-- ❌ Quitamos [lineNumbers]; si los quieres, te paso el plugin específico. -->
+    <!-- BLOQUE DE CÓDIGO (resaltado con Highlight.js a través de ngx-highlightjs).
+         - [highlight] recibe el texto del .py.
+         - language="python" indica el lenguaje a resaltar. -->
     <pre><code [highlight]="f.codigo" language="python"></code></pre>
+
+    <!-- BLOQUE DE SALIDA ESPERADA (opcional).
+         - Solo se muestra si el JSON trae 'salida' para este archivo.
+         - Lo dejamos como texto plano (sin highlight) simulando la terminal. -->
+    <ng-container *ngIf="f.salida">
+      <div class="small text-muted mt-2 mb-1">
+        Salida esperada (ejemplo de terminal)
+      </div>
+      <!-- Estilos sencillos: fondo claro, borde y padding para aspecto de consola. -->
+      <pre class="bg-light p-3 rounded border">
+<code>{{ f.salida }}</code>
+      </pre>
+    </ng-container>
   </div>
 </div>
 
+<!-- Plantilla alternativa cuando 'ejercicio' es nulo/undefined (error o id inexistente). -->
 <ng-template #errorTpl>
   <div class="container py-4">
-    <div class="alert alert-danger" *ngIf="error; else noData"> {{ error }} </div>
+    <!-- Si hay mensaje de error lo mostramos, si no, indicamos que no hay datos. -->
+    <div class="alert alert-danger" *ngIf="error; else noData">{{ error }}</div>
     <ng-template #noData>
       <div class="alert alert-warning">No hay datos del ejercicio.</div>
     </ng-template>
+
+    <!-- Botón para volver al listado de ejercicios. -->
     <a routerLink="/python" class="btn btn-outline-secondary btn-sm mt-2">← Volver</a>
   </div>
 </ng-template>
