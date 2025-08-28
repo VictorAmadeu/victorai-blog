@@ -1,75 +1,78 @@
 // Servicio Angular para gestionar los ejercicios de Python:
 // - Lee el catálogo (exercises.json)
-// - Lee el contenido de los .py como texto plano
+// - Lee el contenido de los .py como texto plano para pintarlos en la UI
 
-// @Injectable: permite usar esta clase como servicio inyectable.
+// @Injectable: marca esta clase para inyección de dependencias.
 import { Injectable } from '@angular/core';
 
 // HttpClient: cliente HTTP para leer JSON y archivos desde /assets.
 import { HttpClient } from '@angular/common/http';
 
-// Operador map de RxJS para transformar flujos.
+// Operador map de RxJS para transformar flujos de datos.
 import { map } from 'rxjs/operators';
 
-// Observable: tipo base para respuestas asíncronas (peticiones HTTP).
+// Observable: tipo base para manejar respuestas asíncronas.
 import { Observable } from 'rxjs';
 
 // ========= Interfaces (modelos de datos) =========
 
 // Representa un archivo del ejercicio (p. ej., main.py).
 export interface PythonFile {
-  nombre: string; // Nombre visible del archivo (ej.: "main.py").
-  ruta: string; // Ruta dentro de /assets (ej.: "assets/python-exercises/clase-01/main.py").
-  salida?: string; // ✅ OPCIONAL: texto con la "salida esperada" a mostrar bajo el código.
+  nombre: string; // Nombre visible (ej.: "main.py").
+  ruta: string; // Ruta en /assets (ej.: "assets/python-exercises/clase-01/main.py").
+  salida?: string; // ✅ OPCIONAL: texto de "salida esperada" que mostraremos bajo el código.
 }
 
-// Representa un ejercicio completo, que puede incluir varios archivos.
+// Representa un ejercicio completo, con uno o varios archivos.
 export interface PythonExercise {
-  id: string; // Identificador único (se usa también en la URL: /python/:id).
+  id: string; // Id único (también se usa en la URL: /python/:id).
   titulo: string; // Título mostrado en tarjetas y detalle.
-  descripcion: string; // Descripción breve para contexto.
-  archivos: PythonFile[]; // Lista de archivos asociados al ejercicio.
+  descripcion: string; // Breve descripción.
+  archivos: PythonFile[]; // Archivos asociados a este ejercicio.
 }
 
 // ========= Servicio =========
-@Injectable({ providedIn: 'root' }) // Disponible en toda la app sin declararlo en providers.
+@Injectable({ providedIn: 'root' }) // Disponible globalmente sin declararlo en providers.
 export class PythonExercisesService {
-  // Ruta del catálogo JSON (servido de forma estática por Angular desde /assets).
+  // Ruta del catálogo JSON servido estáticamente por Angular desde /assets.
   private readonly jsonUrl = 'assets/python-exercises/exercises.json';
 
-  // Inyectamos HttpClient para poder realizar peticiones HTTP.
+  // Inyectamos HttpClient para realizar peticiones HTTP.
   constructor(private http: HttpClient) {}
 
   /**
    * Devuelve la lista completa de ejercicios del catálogo.
-   * Tipamos la respuesta como PythonExercise[] para tener autocompletado y validación de tipos.
+   * Tipamos como PythonExercise[] para autocompletado y seguridad de tipos.
    */
   listar(): Observable<PythonExercise[]> {
     return this.http.get<PythonExercise[]>(this.jsonUrl);
   }
 
   /**
-   * Obtiene un único ejercicio por su id.
+   * Obtiene un ejercicio por su id.
    * Implementación simple: reutiliza listar() y hace un find en memoria.
-   * (Para catálogos pequeños en /assets es suficiente y muy legible).
+   * Suficiente y legible para catálogos pequeños estáticos en /assets.
    */
   obtener(id: string): Observable<PythonExercise | undefined> {
     return this.listar().pipe(
-      map((arr) => arr.find((e) => e.id === id)) // Si no lo encuentra → undefined.
+      map((arr) => arr.find((e) => e.id === id)) // Si no existe → undefined.
     );
   }
 
   /**
    * Lee un archivo .py como TEXTO PLANO.
-   * ⚠️ Claves para evitar el error de overload:
-   *    - NO usar el genérico <string> en this.http.get(...).
-   *    - Forzar el literal del overload correcto: responseType: 'text' as 'text'.
-   * Con eso, HttpClient devuelve Observable<string> sin que TS lo confunda con 'json' o 'arraybuffer'.
+   *
+   * ⚠️ Importante para evitar los errores TS2322/TS2769:
+   *    - NO usar this.http.get<string>(...).
+   *    - Forzar el overload de texto con: responseType: 'text' as 'text'
+   *
+   * Con esto, HttpClient devuelve Observable<string> (texto) y no intenta
+   * usar el overload por defecto de JSON ni el de ArrayBuffer.
    */
   leerArchivoText(ruta: string): Observable<string> {
     return this.http.get(ruta, {
-      responseType: 'text' as 'text', // ← fuerza el overload de texto
-      // observe: 'body'        // (opcional) también ayuda, pero no es necesario
+      responseType: 'text' as 'text', // ← fuerza a devolver texto (no JSON).
+      // observe: 'body'             // (Opcional) también ayuda, pero no es necesario.
     });
   }
 }
