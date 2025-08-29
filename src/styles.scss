@@ -1,2 +1,186 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
-@import 'highlight.js/styles/github.css';
+// -----------------------------------------------------------------------------
+// IMPORTS DE ESTILOS DE TERCEROS
+// -----------------------------------------------------------------------------
+
+@import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap: grid, utilidades y componentes
+@import "highlight.js/styles/github.css";       // Tema de resaltado de código (GitHub) para highlight.js
+
+
+// -----------------------------------------------------------------------------
+// VARIABLES (colores, sombras, tamaños)
+// -----------------------------------------------------------------------------
+
+:root {
+  --container-max: 980px;                // Ancho máximo de lectura (mejor legibilidad)
+  --text-color: #111827;                 // Negro grisáceo (mejor que #000 para lectura)
+  --muted-color: #6b7280;                // Texto atenuado
+  --border-color: #e5e7eb;               // Borde muy sutil
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, .08); // Sombra suave para tarjetas
+
+  /* Color de marca y su variante "hover" calculada a mano.
+     No usar darken()/lighten() de Sass con var(--...): fallará en build. */
+  --brand-primary: #0d6efd;              // Azul Bootstrap
+  --brand-primary-hover: #0b5ed7;        // Azul un poco más oscuro para :hover
+
+  --code-bg: #0f172a;                    // Fondo de bloques de código
+  --code-fg: #e2e8f0;                    // Texto de código
+  --inline-code-bg: #f8f9fa;             // Fondo para `code` inline
+}
+
+
+// -----------------------------------------------------------------------------
+// TIPOGRAFÍA Y BASE
+// -----------------------------------------------------------------------------
+
+html {
+  scroll-behavior: smooth; // Desplazamiento suave al navegar por anclas
+}
+
+body {
+  color: var(--text-color); // Color de texto global
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased; // Suavizado de fuentes (WebKit)
+  -moz-osx-font-smoothing: grayscale;  // Suavizado de fuentes (Firefox/macOS)
+  background: #fff; // Fondo limpio
+}
+
+.container {
+  max-width: var(--container-max); // Limitar ancho para columnas de texto largas
+}
+
+// Enlaces: sutiles, con subrayado al pasar el cursor (mejora accesibilidad)
+a {
+  color: var(--brand-primary);
+  text-decoration: none;
+  transition: color .15s ease, text-decoration-color .15s ease;
+
+  &:hover {
+    /* ❌ Antes: color: darken(var(--brand-primary), 6%); (Sass no acepta var()) */
+    /* ✅ Ahora: usamos la variable predefinida para hover */
+    color: var(--brand-primary-hover);
+    text-decoration: underline;
+    text-decoration-color: rgba(13, 110, 253, .45);
+  }
+}
+
+// Encabezados: márgenes superiores consistentes y peso fuerte
+h1, h2, h3 {
+  margin-top: 1.2rem;
+  font-weight: 700;
+}
+h4, h5, h6 {
+  margin-top: .9rem;
+  font-weight: 600;
+}
+
+// Separador horizontal más sutil
+hr {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 1.5rem 0;
+}
+
+// Citas con una barra lateral tenue
+blockquote {
+  margin: 1rem 0;
+  padding: .75rem 1rem;
+  border-left: 4px solid var(--border-color);
+  color: var(--muted-color);
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+// Imágenes fluidas por defecto
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px; // Un pelín de redondeo queda moderno
+}
+
+
+// -----------------------------------------------------------------------------
+// TARJETAS DE ARTÍCULOS (coincide con la clase usada en Articles)
+// -----------------------------------------------------------------------------
+
+.article-card {
+  border: 1px solid #e9ecef;     // Borde muy suave
+  border-radius: 10px;            // Bordes redondeados
+  transition: transform .15s ease, box-shadow .15s ease; // Animación sutil
+
+  &:hover {
+    transform: translateY(-2px);  // Efecto “levitar” ligero
+    box-shadow: var(--card-shadow);
+  }
+
+  .card-title {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .badge {
+    font-size: .72rem;            // Badge más discreto
+    padding: .35rem .5rem;
+  }
+}
+
+
+// -----------------------------------------------------------------------------
+// ESTILOS PARA MARKDOWN (cuando renderizas contenido completo)
+// -----------------------------------------------------------------------------
+
+/* Aplica esta clase al contenedor que recibe [innerHTML]="... | markdown" */
+.markdown-body {
+
+  h1, h2, h3 { margin-top: 1.2rem; font-weight: 700; }
+
+  p { line-height: 1.65; margin: .75rem 0; }
+
+  ul, ol { padding-left: 1.25rem; margin: .5rem 0 .75rem; }
+
+  code {
+    background: var(--inline-code-bg);
+    padding: .15rem .35rem;
+    border-radius: 4px;
+    font-size: .95em;
+  }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: .85rem 1rem;
+    border-radius: 8px;
+    overflow: auto;
+    line-height: 1.5;
+    margin: 1rem 0;
+
+    code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      color: inherit;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  }
+
+  img { display: block; margin: .75rem auto; border-radius: 8px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+
+    th, td { border: 1px solid var(--border-color); padding: .5rem .6rem; }
+    th { background: #f8f9fa; font-weight: 600; }
+  }
+}
+
+
+// -----------------------------------------------------------------------------
+// PEQUEÑOS AJUSTES / UTILIDADES
+// -----------------------------------------------------------------------------
+
+.btn-outline-primary:hover { color: #fff; }
+
+@media (min-width: 992px) {
+  a:hover { text-decoration-thickness: 2px; }
+}

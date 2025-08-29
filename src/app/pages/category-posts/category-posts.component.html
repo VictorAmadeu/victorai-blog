@@ -1,28 +1,52 @@
 <!-- src/app/pages/category-posts/category-posts.component.html -->
-<section class="container py-4">
-  <a routerLink="/categorias" class="btn btn-link p-0 mb-3">← Volver a categorías</a>
-  <h1 class="mb-3 text-capitalize">{{ prettyCategoryName }}</h1>
+<!-- Vista que:
+     - Muestra la cabecera con el nombre "bonito" de la categoría y un contador de artículos
+     - Gestiona loading, error y estado vacío
+     - Recorre los posts y pinta el CONTENIDO COMPLETO con Markdown (seguro y estilizado) -->
 
+<section class="container py-4">
+  <!-- Enlace de retorno a la lista de categorías -->
+  <a routerLink="/categorias" class="btn btn-link p-0 mb-3">← Volver a categorías</a>
+
+  <!-- Título principal de la página (nombre legible de la categoría) -->
+  <h1 class="mb-1 text-capitalize">{{ prettyCategoryName }}</h1>
+
+  <!-- Subtítulo con contador de artículos; se muestra cuando ya tenemos el array -->
+  <p class="text-muted mb-4" *ngIf="!loading">{{ posts.length }} artículo{{ posts.length === 1 ? '' : 's' }} en esta categoría</p>
+
+  <!-- Estado: cargando datos (solo mientras esperamos la respuesta) -->
   <div *ngIf="loading">Cargando…</div>
-  <div *ngIf="!loading && error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Estado: error (cuando NO está cargando y hay error) -->
+  <div *ngIf="!loading && error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Estado: categoría sin artículos (cuando NO hay error, NO carga y la lista está vacía) -->
   <div *ngIf="!loading && !error && posts.length === 0" class="text-muted">
     No hay artículos en esta categoría.
   </div>
 
-  <div class="row g-4" *ngIf="!loading && !error">
-    <div class="col-md-6 col-lg-4" *ngFor="let post of posts; trackBy: trackByPostId">
-      <article class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title mb-1">{{ post.title }}</h5>
-          <p class="text-muted small mb-3" *ngIf="post.created_at">
-            {{ post.created_at | date:'mediumDate' }}
-          </p>
-          <p class="card-text">
-            {{ (post.content || '') | slice:0:220 }}
-            <span *ngIf="(post.content || '').length > 220">…</span>
-          </p>
-        </div>
-      </article>
-    </div>
-  </div>
+  <!-- Contenido: cuando NO hay error y NO está cargando -->
+  <!-- Mostramos CADA post con su título, fecha y el contenido COMPLETO en Markdown -->
+  <ng-container *ngIf="!loading && !error">
+    <!-- Iteramos posts; trackBy para rendimiento y asignamos un id de ancla al artículo -->
+    <article class="mb-5" *ngFor="let post of posts; trackBy: trackByPostId" [attr.id]="'post-' + post.id">
+      <!-- Título del artículo (jerarquía h2 dentro de la página) -->
+      <h2 class="h4 mb-1">{{ post.title }}</h2>
+
+      <!-- Fecha formateada (si existe) -->
+      <p class="text-muted small mb-3" *ngIf="post.created_at">
+        {{ post.created_at | date:'d MMM yyyy' }}
+      </p>
+
+      <!-- CONTENIDO COMPLETO con Markdown -->
+      <!-- El pipe `markdown` (DOMPurify + marked) convierte y sanea -->
+      <!-- La clase .markdown-body aplica tipografía y estilos agradables (definidos en styles.scss) -->
+      <div class="markdown-body" [innerHTML]="post.content | markdown"></div>
+
+      <!-- Separador visual entre posts (sutil) -->
+      <hr class="mt-4">
+    </article>
+  </ng-container>
 </section>

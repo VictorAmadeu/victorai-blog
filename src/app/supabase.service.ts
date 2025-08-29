@@ -1,18 +1,17 @@
 // src/app/supabase.service.ts
 
-// 1) Angular inyectable para que el servicio esté disponible en toda la app.
+// 1) Angular: hacemos el servicio inyectable a nivel global.
 import { Injectable } from '@angular/core';
 
-// 2) SDK oficial de Supabase: lo usamos para inicializar el cliente.
-//    Nota: en este servicio consumimos la API REST de PostgREST con fetch
-//    (por simplicidad y control de cabeceras), pero mantener el cliente
-//    creado es útil si más adelante quieres auth en el front.
+// 2) SDK de Supabase: lo inicializamos (aunque en este servicio usaremos REST con fetch).
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// 3) Variables de entorno: supabaseUrl y supabaseKey (anon) definidas por ti.
+// 3) Variables de entorno (tu URL y la anon key).
 import { environment } from '../environments/environment';
 
-// 4) Tipado de errores “amigable” para respuestas REST.
+// ---------- Tipos utilitarios para respuestas REST ----------
+
+// 4) Estructura de error “amigable” que PostgREST puede devolver.
 type ApiError = {
   message?: string;
   code?: string;
@@ -20,10 +19,12 @@ type ApiError = {
   hint?: string;
 };
 
-// 5) Envoltorio genérico de respuestas: data, error y status HTTP.
+// 5) Envoltorio genérico de resultados: datos | error | status HTTP.
 type ApiResult<T> = { data: T | null; error: ApiError | null; status?: number };
 
-// 6) Tipos de dominio mínimos que usaremos en la app.
+// ---------- Tipos de dominio mínimos del blog ----------
+
+// 6) Categoría: lo que guardas en la tabla `categories`.
 export type Category = {
   id: string; // uuid
   name: string; // nombre visible, p.ej. "Ingeniería de IA"
@@ -31,33 +32,33 @@ export type Category = {
   created_at?: string; // timestamp (opcional)
 };
 
+// 7) Post: lo que guardas en la tabla `posts`.
 export type Post = {
   id: string; // uuid
   title: string; // título del artículo
-  content: string; // cuerpo (HTML/Markdown renderizable)
+  content: string; // cuerpo en Markdown/HTML renderizable
   category_slug?: string; // relación simple con categories.slug
-  user_id?: string | null; // autor (si usas auth y RLS por usuario)
+  user_id?: string | null; // autor (si aplicas auth/RLS)
   created_at?: string; // timestamp
-  // Si más adelante añades excerpt, cover_url, etc., amplías este tipo.
+  // Nota: si más adelante añades excerpt, cover_url, tags, etc., amplías este tipo.
 };
 
-// 7) Decorador Injectable: el servicio se registra en el inyector raíz.
+// 8) Registramos el servicio en el inyector raíz de Angular.
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
-  // 8) Cliente de Supabase (aunque operamos con REST, lo conservamos).
+  // 9) Cliente oficial de Supabase (útil si luego haces auth, storage, RPC...).
   private client: SupabaseClient;
 
-  // 9) Constantes de tablas y base REST (PostgREST) para construir URLs.
+  // 10) Nombres de tablas y base URL REST (PostgREST) para construir endpoints.
   private readonly NEWSLETTER_TABLE = 'newsletter_subscribers';
   private readonly POSTS_TABLE = 'posts';
   private readonly CATEGORIES_TABLE = 'categories';
   private readonly REST_BASE = `${environment.supabaseUrl}/rest/v1`;
 
   constructor() {
-    // 10) Inicializamos el cliente con opciones "ligeras"
-    //     - sin persistir sesión
-    //     - sin auto refresh
-    //     - con cabeceras globales (apikey y Bearer) para REST.
+    // 11) Inicializamos el cliente con opciones “ligeras”
+    //     - No persistimos sesión ni auto-refresh (evita locks en SSR/build)
+    //     - Añadimos cabeceras globales para que el SDK REST herede la apikey.
     this.client = createClient(
       environment.supabaseUrl,
       environment.supabaseKey,
@@ -78,10 +79,10 @@ export class SupabaseService {
   }
 
   // ---------------------------------------------------------------------------
-  // Utilidades internas (cabeceras REST)
+  // Utilidades internas: cabeceras REST
   // ---------------------------------------------------------------------------
 
-  // 11) Cabeceras estándar para lecturas (GET) en esquema "public".
+  // 12) Cabeceras estándar de LECTURA (GET) en el esquema `public`.
   private get readHeaders() {
     return {
       Accept: 'application/json',
@@ -91,7 +92,7 @@ export class SupabaseService {
     } as const;
   }
 
-  // 12) Cabeceras estándar para escrituras (POST/PUT/PATCH) en "public".
+  // 13) Cabeceras estándar de ESCRITURA (POST/PATCH) en el esquema `public`.
   private get writeHeaders() {
     return {
       'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ export class SupabaseService {
       apikey: environment.supabaseKey,
       Authorization: `Bearer ${environment.supabaseKey}`,
       'Content-Profile': 'public',
-      // Prefer: return=representation → devuelve la fila insertada/actualizada.
+      // Prefer: return=representation → PostgREST devuelve la fila afectada.
       Prefer: 'return=representation',
     } as const;
   }
@@ -108,7 +109,7 @@ export class SupabaseService {
   // NEWSLETTER
   // ---------------------------------------------------------------------------
 
-  // 13) Alta sencilla de suscriptor (sin upsert ni merge-duplicates).
+  // 14) Alta sencilla de suscriptor.
   async addSubscriber(email: string): Promise<ApiResult<any>> {
     try {
       const url = `${this.REST_BASE}/${encodeURIComponent(
@@ -131,7 +132,7 @@ export class SupabaseService {
         };
       }
 
-      // 14) PostgREST puede devolver array; normalizamos a objeto.
+      // PostgREST a veces responde con array → normalizamos a objeto.
       const row = Array.isArray(json) ? json[0] : json;
       return { data: row, error: null, status: res.status };
     } catch (e: any) {
@@ -165,7 +166,7 @@ export class SupabaseService {
   }
 
   // ---------------------------------------------------------------------------
-  // BLOG: POSTS (listado general y alta)
+  // BLOG: POSTS (listado general y creación)
   // ---------------------------------------------------------------------------
 
   // 16) Listar posts (últimos primero). Seleccionamos campos seguros.
@@ -190,20 +191,18 @@ export class SupabaseService {
     }
   }
 
-  // 17) Crear post. Útil si quieres insertar desde el front (admin simple).
-  //     - Recibe title, content, y opcionalmente categorySlug y userId.
-  //     - Si tu columna user_id es NOT NULL, DEBES pasar userId válido (auth.users.id).
+  // 17) Crear post desde el front (útil para un mini panel de admin).
+  //     OJO: si `posts.user_id` es NOT NULL, debes pasar un `userId` válido.
   async addPost(params: {
     title: string;
     content: string;
     categorySlug?: string;
-    userId?: string; // obligatorio si posts.user_id es NOT NULL
+    userId?: string; // obligatorio si hay NOT NULL en la tabla
   }): Promise<ApiResult<Post>> {
     const payload: any = {
       title: params.title,
       content: params.content,
     };
-
     if (params.categorySlug) payload.category_slug = params.categorySlug;
     if (params.userId) payload.user_id = params.userId;
 
@@ -218,12 +217,13 @@ export class SupabaseService {
 
       const json = await res.json().catch(() => null);
 
-      if (!res.ok)
+      if (!res.ok) {
         return {
           data: null,
           error: json || { message: res.statusText },
           status: res.status,
         };
+      }
 
       const row = Array.isArray(json) ? json[0] : json;
       return { data: row as Post, error: null, status: res.status };
@@ -237,7 +237,7 @@ export class SupabaseService {
   }
 
   // ---------------------------------------------------------------------------
-  // CATEGORÍAS: listado y posts por categoría
+  // CATEGORÍAS (PRO): listado, detalle por slug y posts por categoría
   // ---------------------------------------------------------------------------
 
   // 18) Listar categorías ordenadas alfabéticamente.
@@ -261,9 +261,33 @@ export class SupabaseService {
     }
   }
 
-  // 19) Listar posts filtrando por slug de categoría.
-  //     - Usamos el operador PostgREST: category_slug=eq.<valor>
-  //     - Importante: encodeURIComponent en el slug por seguridad.
+  // 19) (PRO) Obtener la categoría por su slug desde la BD
+  //     Se usa para mostrar el nombre oficial en la cabecera de la página.
+  async getCategoryBySlug(slug: string): Promise<ApiResult<Category | null>> {
+    try {
+      const url =
+        `${this.REST_BASE}/${this.CATEGORIES_TABLE}` +
+        `?select=id,slug,name,created_at` +
+        `&slug=eq.${encodeURIComponent(slug)}` +
+        `&limit=1`;
+
+      const res = await fetch(url, { headers: this.readHeaders });
+      const json = await res.json();
+
+      if (!res.ok) return { data: null, error: json, status: res.status };
+
+      const row = (Array.isArray(json) ? json[0] : json) ?? null;
+      return { data: row as Category | null, error: null, status: res.status };
+    } catch (e: any) {
+      return {
+        data: null,
+        error: { message: e?.message || 'network error' },
+        status: 0,
+      };
+    }
+  }
+
+  // 20) Listar posts filtrando por slug de categoría.
   async getPostsByCategory(
     slug: string,
     limit = 20

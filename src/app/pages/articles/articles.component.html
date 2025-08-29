@@ -22,51 +22,46 @@
   <!-- 6) Grid de tarjetas: g-4 = separación entre columnas/filas -->
   <div class="row g-4">
 
-    <!-- 7) Iteramos los posts. 
-            (Sugerencia: en el TS puedes añadir trackBy para rendimiento) -->
-    <div class="col-md-6 col-lg-4" *ngFor="let post of posts">
+    <!-- 7) Iteramos los posts. Usamos trackById (definido en el TS) para rendimiento -->
+    <div class="col-md-6 col-lg-4" *ngFor="let post of posts; trackBy: trackById">
 
-      <!-- 8) Tarjeta Bootstrap de alto completo para igualar alturas -->
-      <div class="card h-100">
+      <!-- 8) Tarjeta con sombra suave (la clase .article-card se define en el SCSS) -->
+      <div class="card h-100 shadow-sm article-card">
 
-        <!-- 9) Cuerpo de la tarjeta: título, badge de categoría, fecha y preview -->
+        <!-- 9) Cuerpo de la tarjeta: badge, título, fecha y extracto -->
         <div class="card-body">
 
           <!-- 10) Badge de CATEGORÍA con enlace a /categorias/:slug
                    - Sólo se muestra si post.category_slug existe.
-                   - Reemplazamos guiones por espacios para que sea más legible.
-                   - NOTA: Necesitas tener RouterLink importado en el componente TS. -->
+                   - El texto del badge usa slugToLabel() para quitar guiones. -->
           <a
             *ngIf="post.category_slug"
             [routerLink]="['/categorias', post.category_slug]"
-            class="badge text-bg-light text-decoration-none mb-2 d-inline-block"
-            >{{  slugToLabel(post.category_slug)  }}</a
+            class="badge rounded-pill bg-light text-dark text-decoration-none mb-2 d-inline-block"
           >
+            {{ slugToLabel(post.category_slug) }}
+          </a>
 
           <!-- 11) Título del artículo -->
           <h5 class="card-title mb-1">{{ post.title }}</h5>
 
-          <!-- 12) Fecha (si viene en el objeto). 
-                   Angular DatePipe requiere CommonModule (ya importado en el TS). -->
+          <!-- 12) Fecha formateada de forma amigable -->
           <p class="text-muted small mb-3" *ngIf="post.created_at">
-            {{ post.created_at | date:'mediumDate' }}
+            {{ post.created_at | date:'d MMM yyyy' }}
           </p>
 
-          <!-- 13) Preview del contenido:
-                   Opción simple: mostramos un recorte de texto para no saturar la tarjeta.
-                   Si tu "content" incluye HTML/Markdown y quieres renderizar HTML,
-                   podrías usar [innerHTML], pero aquí dejamos una vista previa en texto. -->
+          <!-- 13) Extracto LIMPIO del contenido (sin sintaxis Markdown)
+                   - stripMarkdown → elimina #, **, enlaces, etc.
+                   - slice:0:220 → recorta a ~220 caracteres para la tarjeta. -->
           <p class="card-text">
-            {{ (post.content || '') | slice:0:220 }}
-            <span *ngIf="(post.content || '').length > 220">…</span>
+            {{ post.content | stripMarkdown | slice:0:220 }}
+            <span *ngIf="(post.content | stripMarkdown).length > 220">…</span>
           </p>
 
-          <!-- 14) (Opcional) Botón de acción.
-                   Si tuvieras página de detalle del post, enlázala aquí.
-                   De momento lo dejamos fuera para no generar rutas inexistentes. -->
+          <!-- 14) (Opcional) Botón "Leer más" si creas la vista de detalle /articulo/:id -->
           <!--
-          <a [routerLink]="['/articulos', post.id]" class="btn btn-sm btn-primary">
-            Leer artículo
+          <a [routerLink]="['/articulo', post.id]" class="btn btn-sm btn-outline-primary">
+            Leer más
           </a>
           -->
         </div>
