@@ -1,19 +1,85 @@
 <!-- src/app/pages/articles/articles.component.html -->
+
+<!-- 1) Contenedor principal con espaciado vertical -->
 <div class="container py-4">
+
+  <!-- 2) Título de la página -->
   <h2 class="mb-4">Artículos</h2>
 
+  <!-- 3) Estado de carga: se muestra mientras esperamos la respuesta del servicio -->
   <div *ngIf="loading">Cargando…</div>
-  <div *ngIf="!loading && errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
-  <div *ngIf="!loading && posts.length === 0" class="text-muted">No hay artículos todavía.</div>
 
-  <div class="row g-4">
-    <div class="col-md-6 col-lg-4" *ngFor="let post of posts">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">{{ post.title }}</h5>
-          <p class="card-text">{{ post.content }}</p>
-        </div>
-      </div>
-    </div>
+  <!-- 4) Estado de error: sólo se muestra cuando NO está cargando y hay mensaje de error -->
+  <div *ngIf="!loading && errorMsg" class="alert alert-danger">
+    {{ errorMsg }}
   </div>
+
+  <!-- 5) Estado vacío: cuando NO está cargando y no hay posts -->
+  <div *ngIf="!loading && posts.length === 0" class="text-muted">
+    No hay artículos todavía.
+  </div>
+
+  <!-- 6) Grid de tarjetas: g-4 = separación entre columnas/filas -->
+  <div class="row g-4">
+
+    <!-- 7) Iteramos los posts. 
+            (Sugerencia: en el TS puedes añadir trackBy para rendimiento) -->
+    <div class="col-md-6 col-lg-4" *ngFor="let post of posts">
+
+      <!-- 8) Tarjeta Bootstrap de alto completo para igualar alturas -->
+      <div class="card h-100">
+
+        <!-- 9) Cuerpo de la tarjeta: título, badge de categoría, fecha y preview -->
+        <div class="card-body">
+
+          <!-- 10) Badge de CATEGORÍA con enlace a /categorias/:slug
+                   - Sólo se muestra si post.category_slug existe.
+                   - Reemplazamos guiones por espacios para que sea más legible.
+                   - NOTA: Necesitas tener RouterLink importado en el componente TS. -->
+          <a
+            *ngIf="post.category_slug"
+            [routerLink]="['/categorias', post.category_slug]"
+            class="badge text-bg-light text-decoration-none mb-2 d-inline-block"
+            >{{  slugToLabel(post.category_slug)  }}</a
+          >
+
+          <!-- 11) Título del artículo -->
+          <h5 class="card-title mb-1">{{ post.title }}</h5>
+
+          <!-- 12) Fecha (si viene en el objeto). 
+                   Angular DatePipe requiere CommonModule (ya importado en el TS). -->
+          <p class="text-muted small mb-3" *ngIf="post.created_at">
+            {{ post.created_at | date:'mediumDate' }}
+          </p>
+
+          <!-- 13) Preview del contenido:
+                   Opción simple: mostramos un recorte de texto para no saturar la tarjeta.
+                   Si tu "content" incluye HTML/Markdown y quieres renderizar HTML,
+                   podrías usar [innerHTML], pero aquí dejamos una vista previa en texto. -->
+          <p class="card-text">
+            {{ (post.content || '') | slice:0:220 }}
+            <span *ngIf="(post.content || '').length > 220">…</span>
+          </p>
+
+          <!-- 14) (Opcional) Botón de acción.
+                   Si tuvieras página de detalle del post, enlázala aquí.
+                   De momento lo dejamos fuera para no generar rutas inexistentes. -->
+          <!--
+          <a [routerLink]="['/articulos', post.id]" class="btn btn-sm btn-primary">
+            Leer artículo
+          </a>
+          -->
+        </div>
+        <!-- 15) Fin card-body -->
+
+      </div>
+      <!-- 16) Fin card -->
+
+    </div>
+    <!-- 17) Fin *ngFor -->
+
+  </div>
+  <!-- 18) Fin row -->
+
 </div>
+<!-- 19) Fin container -->
