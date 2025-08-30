@@ -1,15 +1,17 @@
 // src/app/supabase.service.ts
 
-// 1) Angular: hacemos el servicio inyectable a nivel global.
+// 1) Angular: hacemos el servicio inyectable a nivel global (raíz del inyector).
 import { Injectable } from '@angular/core';
 
-// 2) SDK de Supabase: lo inicializamos (aunque en este servicio usaremos REST con fetch).
+// 2) SDK de Supabase: lo inicializamos (aunque aquí usamos REST con fetch).
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // 3) Variables de entorno (tu URL y la anon key).
 import { environment } from '../environments/environment';
 
-// ---------- Tipos utilitarios para respuestas REST ----------
+// -----------------------------------------------------------------------------
+// TIPOS UTILITARIOS PARA RESPUESTAS REST
+// -----------------------------------------------------------------------------
 
 // 4) Estructura de error “amigable” que PostgREST puede devolver.
 type ApiError = {
@@ -22,26 +24,33 @@ type ApiError = {
 // 5) Envoltorio genérico de resultados: datos | error | status HTTP.
 type ApiResult<T> = { data: T | null; error: ApiError | null; status?: number };
 
-// ---------- Tipos de dominio mínimos del blog ----------
+// -----------------------------------------------------------------------------
+// TIPOS DE DOMINIO DEL BLOG
+// -----------------------------------------------------------------------------
 
-// 6) Categoría: lo que guardas en la tabla `categories`.
+// 6) Categoría: filas de la tabla `categories`.
 export type Category = {
   id: string; // uuid
-  name: string; // nombre visible, p.ej. "Ingeniería de IA"
-  slug: string; // slug url-safe, p.ej. "ingenieria-de-ia"
+  name: string; // p.ej. "Ingeniería de IA"
+  slug: string; // p.ej. "ingenieria-de-ia"
   created_at?: string; // timestamp (opcional)
 };
 
-// 7) Post: lo que guardas en la tabla `posts`.
+// 7) Post: filas de la tabla `posts`.
 export type Post = {
   id: string; // uuid
   title: string; // título del artículo
   content: string; // cuerpo en Markdown/HTML renderizable
   category_slug?: string; // relación simple con categories.slug
+  cover_url?: string | null; // 👈 URL de portada (puede ser null)
   user_id?: string | null; // autor (si aplicas auth/RLS)
   created_at?: string; // timestamp
-  // Nota: si más adelante añades excerpt, cover_url, tags, etc., amplías este tipo.
+  // Si más adelante añades excerpt, tags, etc., amplías este tipo.
 };
+
+// -----------------------------------------------------------------------------
+// SERVICIO
+// -----------------------------------------------------------------------------
 
 // 8) Registramos el servicio en el inyector raíz de Angular.
 @Injectable({ providedIn: 'root' })
@@ -79,7 +88,7 @@ export class SupabaseService {
   }
 
   // ---------------------------------------------------------------------------
-  // Utilidades internas: cabeceras REST
+  // UTILIDADES INTERNAS: CABECERAS REST
   // ---------------------------------------------------------------------------
 
   // 12) Cabeceras estándar de LECTURA (GET) en el esquema `public`.
@@ -169,12 +178,12 @@ export class SupabaseService {
   // BLOG: POSTS (listado general y creación)
   // ---------------------------------------------------------------------------
 
-  // 16) Listar posts (últimos primero). Seleccionamos campos seguros.
+  // 16) Listar posts (últimos primero). 👈 Incluimos cover_url en el SELECT.
   async getPosts(limit = 10): Promise<ApiResult<Post[]>> {
     try {
       const url =
         `${this.REST_BASE}/${this.POSTS_TABLE}` +
-        `?select=id,title,content,created_at,category_slug` +
+        `?select=id,title,content,created_at,category_slug,cover_url` + // ← cover_url
         `&order=created_at.desc.nullslast&limit=${limit}`;
 
       const res = await fetch(url, { headers: this.readHeaders });
@@ -191,19 +200,24 @@ export class SupabaseService {
     }
   }
 
-  // 17) Crear post desde el front (útil para un mini panel de admin).
-  //     OJO: si `posts.user_id` es NOT NULL, debes pasar un `userId` válido.
+  // 17) Crear post desde el front (mini “admin”).
+  //     Admitimos coverUrl para guardar la portada.
+  //     ⚠️ Si `posts.user_id` es NOT NULL, debes pasar un `userId` válido.
   async addPost(params: {
     title: string;
     content: string;
     categorySlug?: string;
+    coverUrl?: string | null; // ← portada opcional
     userId?: string; // obligatorio si hay NOT NULL en la tabla
   }): Promise<ApiResult<Post>> {
+    // 17.1) Construimos payload sólo con campos presentes.
     const payload: any = {
       title: params.title,
       content: params.content,
     };
     if (params.categorySlug) payload.category_slug = params.categorySlug;
+    if (typeof params.coverUrl !== 'undefined')
+      payload.cover_url = params.coverUrl;
     if (params.userId) payload.user_id = params.userId;
 
     try {
@@ -236,11 +250,17 @@ export class SupabaseService {
     }
   }
 
+  // (Opcional) 18) Helper para pedir los N últimos posts (alias semántico).
+  // Reutiliza getPosts pero deja clara la intención en Home.
+  async getLatestPosts(limit = 3): Promise<ApiResult<Post[]>> {
+    return this.getPosts(limit);
+  }
+
   // ---------------------------------------------------------------------------
   // CATEGORÍAS (PRO): listado, detalle por slug y posts por categoría
   // ---------------------------------------------------------------------------
 
-  // 18) Listar categorías ordenadas alfabéticamente.
+  // 19) Listar categorías ordenadas alfabéticamente.
   async getCategories(): Promise<ApiResult<Category[]>> {
     try {
       const url =
@@ -261,7 +281,7 @@ export class SupabaseService {
     }
   }
 
-  // 19) (PRO) Obtener la categoría por su slug desde la BD
+  // 20) Obtener la categoría por su slug desde la BD.
   //     Se usa para mostrar el nombre oficial en la cabecera de la página.
   async getCategoryBySlug(slug: string): Promise<ApiResult<Category | null>> {
     try {
@@ -287,7 +307,8 @@ export class SupabaseService {
     }
   }
 
-  // 20) Listar posts filtrando por slug de categoría.
+  // 21) Listar posts filtrando por slug de categoría.
+  //     👈 También incluimos cover_url en el SELECT.
   async getPostsByCategory(
     slug: string,
     limit = 20
@@ -295,7 +316,7 @@ export class SupabaseService {
     try {
       const url =
         `${this.REST_BASE}/${this.POSTS_TABLE}` +
-        `?select=id,title,content,created_at,category_slug` +
+        `?select=id,title,content,created_at,category_slug,cover_url` + // ← cover_url
         `&category_slug=eq.${encodeURIComponent(slug)}` +
         `&order=created_at.desc.nullslast&limit=${limit}`;
 
@@ -313,3 +334,4 @@ export class SupabaseService {
     }
   }
 }
+// 22) Fin del servicio SupabaseService.

@@ -1,16 +1,49 @@
-<!-- categories.component.html -->
+<!-- src/app/pages/categories/categories.component.html -->
+<!-- Vista de categorías:
+     - Muestra un listado de enlaces a /categorias/:slug
+     - Gestiona estados de carga, error y vacío
+     - Usa Bootstrap para la disposición en tarjetas -->
+
 <section class="container py-4">
-  <h1>Categorías</h1>
-  <p class="text-muted">Explora los artículos por temática 👇</p>
+  <!-- 1) Título + subtítulo descriptivo -->
+  <h1 class="mb-2">Categorías</h1>
+  <p class="text-muted mb-4">Explora los artículos por temática 👇</p>
 
+  <!-- 2) Estado: cargando datos -->
   <div *ngIf="loading">Cargando…</div>
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div class="row g-3" *ngIf="!loading && !error">
-    <div class="col-12 col-sm-6 col-md-4" *ngFor="let c of categories">
-      <a class="card p-3 h-100 text-decoration-none" [routerLink]="['/categorias', c.slug]">
+  <!-- 3) Estado: error (sólo si NO está cargando y existe error) -->
+  <div *ngIf="!loading && error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- 4) Estado: vacío (sin categorías que mostrar) -->
+  <div *ngIf="!loading && !error && categories.length === 0" class="text-muted">
+    Aún no hay categorías publicadas.
+  </div>
+
+  <!-- 5) Contenido: grid de tarjetas (cuando hay datos y no hay error) -->
+  <div class="row g-3" *ngIf="!loading && !error && categories.length">
+    <!-- 6) Una tarjeta por categoría -->
+    <!--    - trackBySlug está definido en el .ts para rendimiento -->
+    <div class="col-12 col-sm-6 col-md-4"
+         *ngFor="let c of categories; trackBy: trackBySlug">
+
+      <!-- 6.1) La tarjeta completa es un enlace a /categorias/:slug
+               Ejemplo: c.slug === 'ingenieria-de-ia' → '/categorias/ingenieria-de-ia' -->
+      <a class="card p-3 h-100 text-decoration-none"
+         [routerLink]="['/categorias', c.slug]"
+         [attr.aria-label]="'Abrir categoría ' + c.name"
+         title="Ver artículos de {{ c.name }}">
+
+        <!-- 6.2) Nombre legible (ej.: 'Ingeniería de IA') -->
         <h3 class="h5 mb-1">{{ c.name }}</h3>
-        <span class="text-primary">Ver artículos →</span>
+
+        <!-- 6.3) Slug mostrado de forma discreta (útil para identificar la URL) -->
+        <small class="text-muted d-block">{{ c.slug }}</small>
+
+        <!-- 6.4) Llamada a la acción visual -->
+        <span class="mt-2 text-primary">Ver artículos →</span>
       </a>
     </div>
   </div>
