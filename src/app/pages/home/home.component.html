@@ -172,17 +172,19 @@
   </div>
 </section>
 
+<!-- ... (todo tu contenido de HERO, Últimos artículos y Chips queda igual) ... -->
+
 <!-- ============================ CONTACTO (NUEVO) =========================== -->
+<!-- ⭐️ ESTA SECCIÓN ES EL DESTINO DEL BOTÓN "Mensajes" DEL NAVBAR -->
 <section id="contacto" class="container mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm">
-  <!-- 11) Título + descripción -->
+  <!-- 1) Título + descripción -->
   <h3 class="h4">Envíanos tu mensaje</h3>
   <p class="text-secondary">Feedback, sugerencias o preguntas: ¡te leemos!</p>
 
-  <!-- 12) Formulario template-driven (ngForm + ngModel).
-          Requiere FormsModule importado en el componente TS. -->
+  <!-- 2) Formulario template-driven (ngForm + ngModel) -->
   <form class="row g-3" #f="ngForm" (ngSubmit)="onSendMessage(f)" novalidate>
 
-    <!-- 12.1) Nombre -->
+    <!-- 2.1) Nombre -->
     <div class="col-12 col-md-6">
       <input
         class="form-control form-control-lg"
@@ -196,7 +198,7 @@
       </small>
     </div>
 
-    <!-- 12.2) Email -->
+    <!-- 2.2) Email -->
     <div class="col-12 col-md-6">
       <input
         type="email"
@@ -211,7 +213,7 @@
       </small>
     </div>
 
-    <!-- 12.3) Asunto -->
+    <!-- 2.3) Asunto -->
     <div class="col-12">
       <input
         class="form-control form-control-lg"
@@ -225,7 +227,7 @@
       </small>
     </div>
 
-    <!-- 12.4) Mensaje -->
+    <!-- 2.4) Mensaje -->
     <div class="col-12">
       <textarea
         class="form-control"
@@ -240,15 +242,15 @@
       </small>
     </div>
 
-    <!-- 12.5) Botón de envío con estado -->
+    <!-- 2.5) Botón de envío + mensajes de estado -->
     <div class="col-12 d-grid d-md-flex gap-2">
       <button class="btn btn-primary btn-lg" type="submit" [disabled]="f.invalid || sending">
         {{ sending ? 'Enviando…' : 'Enviar mensaje' }}
       </button>
 
-      <!-- 12.6) Mensajes de estado -->
       <span class="text-success align-self-center" *ngIf="successMsg">{{ successMsg }}</span>
       <span class="text-danger align-self-center" *ngIf="errorMsg">{{ errorMsg }}</span>
     </div>
   </form>
 </section>
+<!-- ============================ FIN CONTACTO =============================== -->

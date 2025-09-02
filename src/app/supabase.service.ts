@@ -1,6 +1,8 @@
 // src/app/supabase.service.ts
-// Servicio central para comunicar Angular con Supabase usando la API REST (PostgREST).
-// Mantiene un estilo consistente con el proyecto: fetch + cabeceras + manejo de errores.
+// Servicio central para comunicar Angular con Supabase.
+// - Usamos REST (fetch + PostgREST) para la mayoría de lecturas/escrituras.
+// - Para el formulario de contacto usamos el SDK oficial supabase-js (INSERT robusto)
+//   y SIN pedir representación (evita SELECT implícito y, por tanto, 401/RLS).
 
 /* -------------------------------------------------------------------------- */
 /*  IMPORTS Y CONFIGURACIÓN BÁSICA                                            */
@@ -9,26 +11,26 @@
 // 1) Angular: hacemos el servicio inyectable a nivel global (raíz del inyector).
 import { Injectable } from '@angular/core';
 
-// 2) SDK de Supabase: lo inicializamos (aunque la mayoría de llamadas las hacemos por REST).
+// 2) SDK de Supabase: cliente oficial para DB/Auth/Storage.
+//    👇 Lo usaremos en el INSERT de contacto (sin .select()).
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// 3) Variables de entorno (URL del proyecto y clave pública "anon").
+// 3) Variables de entorno: URL del proyecto y clave pública "anon".
 import { environment } from '../environments/environment';
 
 /* -------------------------------------------------------------------------- */
-/*  TIPOS UTILITARIOS PARA RESPUESTAS REST                                     */
+/*  TIPOS UTILITARIOS PARA RESPUESTAS/ERRORES                                 */
 /* -------------------------------------------------------------------------- */
 
-// 4) Estructura de error “amigable” que PostgREST puede devolver.
+// 4) Estructura de error (PostgREST / supabase-js).
 type ApiError = {
   message?: string; // Mensaje legible
-  code?: string; // Código de error (p.ej. '23505' para unique violation)
-  details?: string; // Detalles técnicos
-  hint?: string; // Sugerencias del servidor
+  code?: string; // Código (p.ej., '23505' unique-violation)
+  details?: string; // Detalles adicionales
+  hint?: string; // Pista del servidor
 };
 
 // 5) Envoltorio genérico de resultados: datos | error | status HTTP.
-//    Esto nos permite tipar el "data" y centralizar el manejo de errores.
 type ApiResult<T> = { data: T | null; error: ApiError | null; status?: number };
 
 /* -------------------------------------------------------------------------- */
@@ -47,24 +49,24 @@ export type Category = {
 export type Post = {
   id: string; // uuid
   title: string; // título del artículo
-  content: string; // cuerpo en Markdown/HTML renderizable
-  category_slug?: string; // relación simple con categories.slug
-  cover_url?: string | null; // 👈 URL de portada (puede ser null)
+  content: string; // cuerpo en Markdown/HTML
+  category_slug?: string; // relación con categories.slug
+  cover_url?: string | null; // portada (nullable)
   user_id?: string | null; // autor (si aplicas auth/RLS)
   created_at?: string; // timestamp
-  // Si más adelante añades excerpt, tags, etc., amplías este tipo.
 };
 
 /* -------------------------------------------------------------------------- */
-/*  NUEVO: TIPO PARA MENSAJES DE CONTACTO                                     */
+/*  TIPO PARA MENSAJES DE CONTACTO                                            */
 /* -------------------------------------------------------------------------- */
 
-// 7.1) Mensaje de contacto que enviará el formulario público.
+// 7.1) Mensaje enviado desde el formulario público.
 export type ContactMessage = {
   name: string; // Nombre del remitente
   email: string; // Correo del remitente
   subject: string; // Asunto
   message: string; // Cuerpo del mensaje
+  // La tabla puede tener id/created_at; no los necesitamos en el front.
 };
 
 /* -------------------------------------------------------------------------- */
@@ -74,38 +76,33 @@ export type ContactMessage = {
 // 8) Registramos el servicio en el inyector raíz de Angular.
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
-  // 9) Cliente oficial de Supabase (útil si luego haces auth, storage, RPC...).
+  // 9) Cliente oficial de Supabase (lo usaremos para el INSERT del contacto).
   private client: SupabaseClient;
 
-  // 10) Nombres de tablas y base URL REST (PostgREST) para construir endpoints.
+  // 10) Nombres de tablas y base REST (PostgREST) para endpoints.
   private readonly NEWSLETTER_TABLE = 'newsletter_subscribers';
   private readonly POSTS_TABLE = 'posts';
   private readonly CATEGORIES_TABLE = 'categories';
+  private readonly CONTACT_TABLE = 'contact_messages'; // 👈 tabla del formulario
 
-  // 10.1) NUEVO: tabla para el formulario de contacto.
-  //       ⚠️ Recuerda: con RLS activo solo hemos creado política de INSERT (no SELECT).
-  private readonly CONTACT_TABLE = 'contact_messages';
-
-  // 10.2) Base de la API REST de Supabase (PostgREST).
+  // 10.1) Base REST.
   private readonly REST_BASE = `${environment.supabaseUrl}/rest/v1`;
 
   constructor() {
-    // 11) Inicializamos el cliente con opciones “ligeras”.
-    //     - No persistimos sesión ni auto-refresh (evita locks en SSR/build).
-    //     - Añadimos cabeceras globales para que el SDK herede la apikey.
+    // 11) Inicialización del cliente con opciones “ligeras”.
     this.client = createClient(
-      environment.supabaseUrl, // URL de tu proyecto
-      environment.supabaseKey, // clave pública "anon"
+      environment.supabaseUrl,
+      environment.supabaseKey,
       {
         auth: {
-          persistSession: false, // no guarda sesión en localStorage
-          autoRefreshToken: false, // no renueva tokens en background
-          detectSessionInUrl: false, // no intenta leer sesión de la URL
+          persistSession: false, // no guardamos sesión en localStorage
+          autoRefreshToken: false, // sin auto-refresh
+          detectSessionInUrl: false, // no lee sesión de la URL
         },
         global: {
           headers: {
-            apikey: environment.supabaseKey, // clave de proyecto
-            Authorization: `Bearer ${environment.supabaseKey}`, // bearer para REST
+            apikey: environment.supabaseKey, // apikey pública
+            Authorization: `Bearer ${environment.supabaseKey}`, // bearer
           },
         },
       }
@@ -113,55 +110,48 @@ export class SupabaseService {
   }
 
   /* ------------------------------------------------------------------------ */
-  /*  UTILIDADES INTERNAS: CABECERAS REST                                     */
+  /*  CABECERAS REST (LECTURA/ESCRITURA)                                      */
   /* ------------------------------------------------------------------------ */
 
-  // 12) Cabeceras estándar de LECTURA (GET) en el esquema `public`.
+  // 12) Cabeceras de LECTURA (GET) en el esquema `public`.
   private get readHeaders() {
     return {
-      Accept: 'application/json', // pedimos JSON
-      apikey: environment.supabaseKey, // clave pública
-      Authorization: `Bearer ${environment.supabaseKey}`, // bearer
-      'Accept-Profile': 'public', // esquema de lectura
+      Accept: 'application/json',
+      apikey: environment.supabaseKey,
+      Authorization: `Bearer ${environment.supabaseKey}`,
+      'Accept-Profile': 'public',
     } as const;
   }
 
-  // 13) Cabeceras estándar de ESCRITURA (POST/PATCH) en el esquema `public`.
+  // 13) Cabeceras de ESCRITURA (POST/PATCH) en `public`.
   private get writeHeaders() {
     return {
-      'Content-Type': 'application/json', // enviamos JSON
-      Accept: 'application/json', // esperamos JSON
-      apikey: environment.supabaseKey, // clave pública
-      Authorization: `Bearer ${environment.supabaseKey}`, // bearer
-      'Content-Profile': 'public', // esquema de escritura
-      // Prefer: return=representation → PostgREST devuelve la fila afectada.
-      Prefer: 'return=representation',
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      apikey: environment.supabaseKey,
+      Authorization: `Bearer ${environment.supabaseKey}`,
+      'Content-Profile': 'public',
+      Prefer: 'return=representation', // para endpoints REST donde sí queremos la fila
     } as const;
   }
 
   /* ------------------------------------------------------------------------ */
-  /*  NEWSLETTER                                                              */
+  /*  NEWSLETTER (REST)                                                       */
   /* ------------------------------------------------------------------------ */
 
-  // 14) Alta sencilla de suscriptor.
+  // 14) Alta de suscriptor (REST).
   async addSubscriber(email: string): Promise<ApiResult<any>> {
     try {
-      // 14.1) Construimos la URL del recurso (tabla newsletter_subscribers).
       const url = `${this.REST_BASE}/${encodeURIComponent(
         this.NEWSLETTER_TABLE
-      )}`;
-
-      // 14.2) Hacemos POST con el email en el cuerpo.
+      )}`; // endpoint
       const res = await fetch(url, {
         method: 'POST',
         headers: this.writeHeaders,
         body: JSON.stringify({ email }),
       });
+      const json = await res.json().catch(() => null); // parse seguro
 
-      // 14.3) Intentamos parsear el JSON (si falla, devolvemos null).
-      const json = await res.json().catch(() => null);
-
-      // 14.4) Si el estado HTTP no es OK, devolvemos el error normalizado.
       if (!res.ok) {
         return {
           data: null,
@@ -170,11 +160,9 @@ export class SupabaseService {
         };
       }
 
-      // 14.5) PostgREST a veces responde con array → normalizamos a objeto.
-      const row = Array.isArray(json) ? json[0] : json;
+      const row = Array.isArray(json) ? json[0] : json; // normaliza array/objeto
       return { data: row, error: null, status: res.status };
     } catch (e: any) {
-      // 14.6) Errores de red u otros no-HTTP.
       return {
         data: null,
         error: { message: e?.message || 'network error' },
@@ -183,15 +171,12 @@ export class SupabaseService {
     }
   }
 
-  // 15) Listado rápido de suscriptores (útil para pruebas).
+  // 15) Listado rápido de suscriptores (REST).
   async listSubscribers(limit = 5): Promise<ApiResult<any[]>> {
     try {
-      // 15.1) SELECT con orden por fecha descendente y límite.
       const url =
         `${this.REST_BASE}/${encodeURIComponent(this.NEWSLETTER_TABLE)}` +
         `?select=id,email,created_at&order=created_at.desc.nullslast&limit=${limit}`;
-
-      // 15.2) GET con cabeceras de lectura.
       const res = await fetch(url, { headers: this.readHeaders });
       const json = await res.json();
 
@@ -207,18 +192,16 @@ export class SupabaseService {
   }
 
   /* ------------------------------------------------------------------------ */
-  /*  BLOG: POSTS (listado general y creación)                                 */
+  /*  BLOG: POSTS (REST)                                                      */
   /* ------------------------------------------------------------------------ */
 
-  // 16) Listar posts (últimos primero). 👈 Incluimos cover_url en el SELECT.
+  // 16) Listar posts (últimos primero). Incluye cover_url.
   async getPosts(limit = 10): Promise<ApiResult<Post[]>> {
     try {
-      // 16.1) SELECT con orden por fecha y límite.
       const url =
         `${this.REST_BASE}/${this.POSTS_TABLE}` +
-        `?select=id,title,content,created_at,category_slug,cover_url` + // ← cover_url
+        `?select=id,title,content,created_at,category_slug,cover_url` +
         `&order=created_at.desc.nullslast&limit=${limit}`;
-
       const res = await fetch(url, { headers: this.readHeaders });
       const json = await res.json();
 
@@ -233,21 +216,16 @@ export class SupabaseService {
     }
   }
 
-  // 17) Crear post desde el front (mini “admin”).
-  //     Admitimos coverUrl para guardar la portada.
-  //     ⚠️ Si `posts.user_id` es NOT NULL, debes pasar un `userId` válido.
+  // 17) Crear post desde el front (REST).
   async addPost(params: {
     title: string;
     content: string;
     categorySlug?: string;
-    coverUrl?: string | null; // ← portada opcional
-    userId?: string; // obligatorio si hay NOT NULL en la tabla
+    coverUrl?: string | null;
+    userId?: string;
   }): Promise<ApiResult<Post>> {
-    // 17.1) Construimos payload sólo con campos presentes.
-    const payload: any = {
-      title: params.title,
-      content: params.content,
-    };
+    // 17.1) Payload solo con campos presentes.
+    const payload: any = { title: params.title, content: params.content };
     if (params.categorySlug) payload.category_slug = params.categorySlug;
     if (typeof params.coverUrl !== 'undefined')
       payload.cover_url = params.coverUrl;
@@ -255,13 +233,11 @@ export class SupabaseService {
 
     try {
       const url = `${this.REST_BASE}/${this.POSTS_TABLE}`;
-
       const res = await fetch(url, {
         method: 'POST',
-        headers: this.writeHeaders,
+        headers: this.writeHeaders, // aquí sí queremos 'return=representation'
         body: JSON.stringify(payload),
       });
-
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
@@ -271,7 +247,6 @@ export class SupabaseService {
           status: res.status,
         };
       }
-
       const row = Array.isArray(json) ? json[0] : json;
       return { data: row as Post, error: null, status: res.status };
     } catch (e: any) {
@@ -283,23 +258,21 @@ export class SupabaseService {
     }
   }
 
-  // (Opcional) 18) Helper para pedir los N últimos posts (alias semántico).
-  // Reutiliza getPosts pero deja clara la intención en Home.
+  // 18) Alias semántico para pedir los N últimos posts.
   async getLatestPosts(limit = 3): Promise<ApiResult<Post[]>> {
     return this.getPosts(limit);
   }
 
   /* ------------------------------------------------------------------------ */
-  /*  CATEGORÍAS (listado y consultas)                                        */
+  /*  CATEGORÍAS (REST)                                                       */
   /* ------------------------------------------------------------------------ */
 
-  // 19) Listar categorías ordenadas alfabéticamente.
+  // 19) Listar categorías (orden alfabético).
   async getCategories(): Promise<ApiResult<Category[]>> {
     try {
       const url =
         `${this.REST_BASE}/${this.CATEGORIES_TABLE}` +
         `?select=id,name,slug,created_at&order=name.asc.nullslast`;
-
       const res = await fetch(url, { headers: this.readHeaders });
       const json = await res.json();
 
@@ -314,21 +287,18 @@ export class SupabaseService {
     }
   }
 
-  // 20) Obtener la categoría por su slug desde la BD.
-  //     Se usa para mostrar el nombre oficial en la cabecera de la página.
+  // 20) Obtener categoría por slug.
   async getCategoryBySlug(slug: string): Promise<ApiResult<Category | null>> {
     try {
       const url =
         `${this.REST_BASE}/${this.CATEGORIES_TABLE}` +
-        `?select=id,slug,name,created_at` +
-        `&slug=eq.${encodeURIComponent(slug)}` +
-        `&limit=1`;
-
+        `?select=id,slug,name,created_at&slug=eq.${encodeURIComponent(
+          slug
+        )}&limit=1`;
       const res = await fetch(url, { headers: this.readHeaders });
       const json = await res.json();
 
       if (!res.ok) return { data: null, error: json, status: res.status };
-
       const row = (Array.isArray(json) ? json[0] : json) ?? null;
       return { data: row as Category | null, error: null, status: res.status };
     } catch (e: any) {
@@ -340,8 +310,7 @@ export class SupabaseService {
     }
   }
 
-  // 21) Listar posts filtrando por slug de categoría.
-  //     👈 También incluimos cover_url en el SELECT.
+  // 21) Listar posts por slug de categoría (incluye cover_url).
   async getPostsByCategory(
     slug: string,
     limit = 20
@@ -349,10 +318,9 @@ export class SupabaseService {
     try {
       const url =
         `${this.REST_BASE}/${this.POSTS_TABLE}` +
-        `?select=id,title,content,created_at,category_slug,cover_url` + // ← cover_url
+        `?select=id,title,content,created_at,category_slug,cover_url` +
         `&category_slug=eq.${encodeURIComponent(slug)}` +
         `&order=created_at.desc.nullslast&limit=${limit}`;
-
       const res = await fetch(url, { headers: this.readHeaders });
       const json = await res.json();
 
@@ -368,59 +336,40 @@ export class SupabaseService {
   }
 
   /* ------------------------------------------------------------------------ */
-  /*  NUEVO: FORMULARIO DE CONTACTO                                           */
+  /*  FORMULARIO DE CONTACTO (SDK supabase-js, SIN representación)            */
   /* ------------------------------------------------------------------------ */
 
-  // 22) Enviar un mensaje de contacto a la tabla `contact_messages`.
-  //     — Normalizamos campos (trim y email en minúsculas).
-  //     — Usamos POST con cabeceras de escritura (RLS debe permitir INSERT a 'anon').
-  //     — Por seguridad y privacidad: NO implementamos un método de lectura en el cliente.
-  async sendContactMessage(
-    input: ContactMessage
-  ): Promise<ApiResult<ContactMessage>> {
-    try {
-      // 22.1) Normalizamos datos antes de enviarlos.
-      const payload: ContactMessage = {
-        name: input.name.trim(),
-        email: input.email.trim().toLowerCase(),
-        subject: input.subject.trim(),
-        message: input.message.trim(),
+  // 22) Enviar un mensaje de contacto a `contact_messages` SIN pedir la fila creada.
+  //     - Evita el SELECT implícito (por eso no usamos .select()).
+  //     - Con RLS basta con tener política INSERT para 'anon' (y opcional 'authenticated').
+  //     - Devolvemos { data: null } en éxito; el front solo necesita saber que fue OK.
+  async sendContactMessage(input: ContactMessage): Promise<ApiResult<null>> {
+    // 22.1) Normaliza el payload antes de enviarlo.
+    const payload: ContactMessage = {
+      name: input.name.trim(),
+      email: input.email.trim().toLowerCase(),
+      subject: input.subject.trim(),
+      message: input.message.trim(),
+    };
+
+    // 22.2) INSERT con supabase-js SIN .select()  → return=minimal (sin SELECT).
+    const { error, status } = await this.client
+      .from(this.CONTACT_TABLE) // tabla destino
+      .insert(payload); // operación INSERT (sin select)
+
+    // 22.3) Si hay error, lo mapeamos a nuestro ApiError consistente.
+    if (error) {
+      const mapped: ApiError = {
+        message: error.message,
+        code: (error as any).code,
+        details: (error as any).details,
+        hint: (error as any).hint,
       };
-
-      // 22.2) Construimos endpoint REST de la tabla `contact_messages`.
-      const url = `${this.REST_BASE}/${encodeURIComponent(this.CONTACT_TABLE)}`;
-
-      // 22.3) Hacemos POST; Prefer: return=representation nos devuelve la fila insertada.
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: this.writeHeaders,
-        body: JSON.stringify(payload),
-      });
-
-      // 22.4) Parseo del JSON devuelto por PostgREST.
-      const json = await res.json().catch(() => null);
-
-      // 22.5) Si falla la petición, devolvemos error con status y detalle del servidor.
-      if (!res.ok) {
-        return {
-          data: null,
-          error: json || { message: res.statusText },
-          status: res.status,
-        };
-      }
-
-      // 22.6) Normalizamos a objeto simple (PostgREST a veces devuelve array).
-      const row = (Array.isArray(json) ? json[0] : json) as ContactMessage;
-      return { data: row, error: null, status: res.status };
-    } catch (e: any) {
-      // 22.7) Errores de red u otros no-HTTP.
-      return {
-        data: null,
-        error: { message: e?.message || 'network error' },
-        status: 0,
-      };
+      return { data: null, error: mapped, status };
     }
+
+    // 22.4) OK → sin datos de vuelta (evitamos SELECT). El componente verá error=null.
+    return { data: null, error: null, status };
   }
 }
 // 23) Fin del servicio SupabaseService.
-//     A partir de aquí, ya puedes inyectar el servicio en tu componente y llamar a `sendContactMessage(...)`.

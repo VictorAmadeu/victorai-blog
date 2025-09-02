@@ -1,11 +1,13 @@
+<!-- Barra de navegación superior -->
 <nav class="navbar navbar-expand-lg bg-white border-bottom">
   <div class="container">
+    <!-- Logo + enlace a Home -->
     <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" routerLink="/">
       <img src="assets/img/avatar.png" alt="Logo" width="44" height="44" class="rounded-circle border">
       <span class="fw-semibold">Victor Amadeu - AI Blog</span>
     </a>
 
-    <!-- Botón hamburguesa para móviles -->
+    <!-- Botón hamburguesa para móviles (abre/cierra el menú colapsable) -->
     <button
       class="navbar-toggler"
       type="button"
@@ -18,26 +20,41 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
+    <!-- Contenedor colapsable del menú -->
     <div id="nav" class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+        <!-- Enlaces principales -->
         <li class="nav-item">
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">Inicio</a>
         </li>
         <li class="nav-item"><a routerLink="/articulos" routerLinkActive="active" class="nav-link">Artículos</a></li>
         <li class="nav-item"><a routerLink="/categorias" routerLinkActive="active" class="nav-link">Categorías</a></li>
         <li class="nav-item"><a routerLink="/sobre-mi" routerLinkActive="active" class="nav-link">Sobre mí</a></li>
+
+        <!-- ⭐️ BOTÓN ACTUALIZADO:
+             - Texto "Mensajes"
+             - SIN routerLink/fragment (para evitar scroll automático)
+             - (click)="goToContact($event)" forzará el scroll sólo bajo petición explícita -->
         <li class="nav-item ms-lg-3">
-          <a class="btn btn-primary rounded-3 px-3" href="#boletin">Suscribirse</a>
+          <a
+            class="btn btn-primary rounded-3 px-3"
+            href="#"
+            (click)="goToContact($event)"
+            aria-label="Ir al formulario de contacto en la Home">
+            Mensajes
+          </a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
 
+<!-- Contenido principal renderizado por el router -->
 <main class="py-4 py-md-5 bg-body-tertiary">
   <router-outlet></router-outlet>
 </main>
 
+<!-- Pie de página con enlaces externos -->
 <footer class="border-top py-4">
   <div class="container small text-secondary d-flex flex-wrap gap-3 justify-content-between align-items-center">
     <div>© {{ currentYear }} Victor Amadeu - AI Blog · Todos los derechos reservados.</div>
