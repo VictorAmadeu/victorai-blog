@@ -9,15 +9,15 @@ import { CommonModule, DatePipe } from '@angular/common';
 // 3) RouterLink: permite usar [routerLink] en botones/enlaces.
 import { RouterLink } from '@angular/router';
 
-// 4) FormsModule: para ngForm y [(ngModel)] del formulario de newsletter.
-import { FormsModule } from '@angular/forms';
+// 4) FormsModule/NgForm: para ngForm y [(ngModel)] del formulario.
+import { FormsModule, NgForm } from '@angular/forms';
 
-// 5) Servicio de datos (Supabase) y tipo Post para tipado fuerte.
-import { SupabaseService, Post } from '../../supabase.service';
+// 5) Servicio de datos (Supabase) y tipos fuertes.
+import { SupabaseService, Post, ContactMessage } from '../../supabase.service';
 
 @Component({
   selector: 'app-home', // 6) Selector (útil si se incrusta en otra vista).
-  standalone: true, // 7) ✅ Sin NgModule (Standalone).
+  standalone: true, // 7) ✅ Componente standalone (sin NgModule).
   // 8) Módulos/Directivas/Pipes disponibles para el HTML de esta vista.
   imports: [CommonModule, RouterLink, FormsModule, DatePipe],
   templateUrl: './home.component.html', // 9) Plantilla asociada.
@@ -25,57 +25,65 @@ import { SupabaseService, Post } from '../../supabase.service';
 })
 export class HomeComponent implements OnInit {
   // ===========================================================================
-  // A) ESTADO DEL NEWSLETTER
+  // A) ESTADO DE “ÚLTIMOS ARTÍCULOS” (desde Supabase)
   // ===========================================================================
-  newsletterEmail = ''; // 11) Modelo enlazado al input de email.
-  loading = false; // 12) Estado mientras enviamos la suscripción.
+  latestPosts: Post[] = []; // 11) Guarda los posts recientes.
+  postsLoading = true; // 12) Spinner de carga del bloque.
+  postsError: string | null = null; // 13) Mensaje de error si la petición falla.
 
   // ===========================================================================
-  // B) ESTADO DE “ÚLTIMOS ARTÍCULOS” (desde Supabase)
+  // B) ESTADO DEL FORMULARIO DE CONTACTO (reemplaza al boletín)
   // ===========================================================================
-  latestPosts: Post[] = []; // 13) Guarda los posts recientes.
-  postsLoading = true; // 14) Spinner de carga del bloque.
-  postsError: string | null = null; // 15) Mensaje de error si la petición falla.
+  contact: ContactMessage = {
+    // 14) Modelo de datos del formulario (two-way binding).
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  };
+  sending = false; // 15) Estado de envío (deshabilita el botón).
+  successMsg = ''; // 16) Mensaje de éxito para el usuario.
+  errorMsg = ''; // 17) Mensaje de error (si lo hay).
 
-  // 16) Inyectamos el servicio de Supabase.
+  // 18) Inyectamos el servicio de Supabase.
   constructor(private readonly supabase: SupabaseService) {}
 
-  // 17) Al montar el componente, pedimos los N últimos artículos.
+  // 19) Al montar el componente, pedimos los N últimos artículos.
   //     👉 OJO: pedimos 2 para dejar un “hueco” a la tarjeta fija de Python.
   async ngOnInit(): Promise<void> {
-    await this.loadLatestPosts(2);
+    await this.loadLatestPosts(2); // 19.1) Carga inicial de posts.
   }
 
-  // 18) Carga de últimos posts con gestión de estados.
+  // 20) Carga de últimos posts con gestión de estados.
   private async loadLatestPosts(limit = 2): Promise<void> {
-    this.postsLoading = true; // 18.1) Activamos loading.
-    this.postsError = null; // 18.2) Limpiamos errores previos.
-    this.latestPosts = []; // 18.3) Limpiamos la lista anterior.
+    this.postsLoading = true; // 20.1) Activamos loading.
+    this.postsError = null; // 20.2) Limpiamos errores previos.
+    this.latestPosts = []; // 20.3) Limpiamos la lista anterior.
 
-    // 18.4) Llamada al servicio → devuelve posts ordenados por fecha desc.
+    // 20.4) Llamada al servicio → devuelve posts ordenados por fecha desc.
     //       (En el servicio ya incluimos 'cover_url' en el SELECT).
     const { data, error } = await this.supabase.getLatestPosts(limit);
 
-    // 18.5) Si hay error, lo mostramos y salimos.
+    // 20.5) Si hay error, lo mostramos y salimos.
     if (error) {
       this.postsError = error.message || 'No se pudieron cargar los artículos.';
       this.postsLoading = false;
       return;
     }
 
-    // 18.6) Asignamos datos (o []) y desactivamos loading.
+    // 20.6) Asignamos datos (o []) y desactivamos loading.
     this.latestPosts = data ?? [];
     this.postsLoading = false;
   }
 
-  // 19) Portada a mostrar en la tarjeta:
+  // 21) Portada a mostrar en la tarjeta:
   //     - Si el post trae 'cover_url', se usa.
   //     - Si no, devolvemos un placeholder local.
   coverFor(post: Post): string {
     return (post as any).cover_url || 'assets/img/placeholder-article.jpg';
   }
 
-  // 20) Enlace del botón “Leer más”:
+  // 22) Enlace del botón “Leer más”:
   //     - Si hay category_slug → /categorias/:slug
   //     - Si no, fallback a /articulos
   readMoreLink(post: Post): any[] {
@@ -84,50 +92,44 @@ export class HomeComponent implements OnInit {
       : ['/articulos'];
   }
 
-  // 21) trackBy para *ngFor (mejora rendimiento al no recrear DOM si no cambia el id).
+  // 23) trackBy para *ngFor (mejora rendimiento al no recrear DOM si no cambia el id).
   trackById(_i: number, p: Post): string {
     return p.id;
   }
 
   // ===========================================================================
-  // C) LÓGICA DEL FORMULARIO DE NEWSLETTER
+  // C) LÓGICA DEL FORMULARIO DE CONTACTO (sustituye al newsletter)
   // ===========================================================================
-  // 22) Envío del formulario de newsletter.
-  async onSubscribe(): Promise<void> {
-    // 22.1) Normalizamos y validamos el email.
-    const email = this.newsletterEmail.trim().toLowerCase();
-    if (!email) return;
 
-    this.loading = true; // 22.2) Activamos el estado de envío.
+  // 24) Envío del formulario de contacto (Template-driven).
+  //     - Recibimos la referencia del formulario para validar con `f.invalid`.
+  async onSendMessage(f: NgForm): Promise<void> {
+    this.successMsg = ''; // 24.1) Limpiar estados previos.
+    this.errorMsg = '';
 
-    // 22.3) Insertamos el email en Supabase (tabla newsletter_subscribers).
-    const { data, error, status } = await this.supabase.addSubscriber(email);
+    if (f.invalid) return; // 24.2) Si el formulario es inválido, no enviamos.
 
-    this.loading = false; // 22.4) Finalizamos el estado de envío.
+    this.sending = true; // 24.3) Activamos estado de envío (UI).
+    try {
+      // 24.4) Llamada al servicio → inserta en la tabla `contact_messages`.
+      const { error } = await this.supabase.sendContactMessage(this.contact);
 
-    // 22.5) Caso OK → limpiamos y confirmamos al usuario.
-    if (!error) {
-      this.newsletterEmail = '';
-      alert(`¡Gracias! Te has suscrito con: ${data?.email || email}`);
-      return;
+      if (!error) {
+        // 24.5) Caso OK → limpiamos el modelo y mostramos confirmación.
+        this.contact = { name: '', email: '', subject: '', message: '' };
+        f.resetForm(); // 24.6) Reset visual de controles/validación.
+        this.successMsg = '¡Mensaje enviado! Gracias por tu feedback 🙌';
+        return;
+      }
+
+      // 24.7) Si hubiera error en la respuesta REST (no debería llegar aquí con try/catch).
+      this.errorMsg = error.message || 'No se pudo enviar el mensaje.';
+    } catch (e: any) {
+      // 24.8) Errores de red u otros no-HTTP.
+      this.errorMsg = e?.message || 'Error de conexión. Inténtalo de nuevo.';
+      console.error('Contact error:', e);
+    } finally {
+      this.sending = false; // 24.9) Desactivamos el estado de envío.
     }
-
-    // 22.6) Si es violación de UNIQUE (email ya suscrito), mensaje claro.
-    if (
-      error?.code === '23505' ||
-      /duplicate|unique/i.test(error?.message || '')
-    ) {
-      this.newsletterEmail = '';
-      alert('Ese correo ya está suscrito ✅');
-      return;
-    }
-
-    // 22.7) Cualquier otro error → log técnico + alerta al usuario.
-    console.error('Error al suscribir:', { error, status });
-    alert(
-      `No se pudo suscribir: ${error?.message || 'Error desconocido'}${
-        status ? ' (HTTP ' + status + ')' : ''
-      }`
-    );
   }
 }
