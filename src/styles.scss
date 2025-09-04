@@ -4,10 +4,11 @@
 
 @import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap: grid, utilidades y componentes
 @import "highlight.js/styles/github.css";       // Tema de resaltado de código (GitHub) para highlight.js
+// @import "bootstrap-icons/font/bootstrap-icons.css"; // (Opcional) Iconos Bootstrap si instalas bootstrap-icons
 
 
 // -----------------------------------------------------------------------------
-// VARIABLES (colores, sombras, tamaños)
+// VARIABLES (tokens de diseño: colores, sombras, tamaños)
 // -----------------------------------------------------------------------------
 
 :root {
@@ -15,16 +16,30 @@
   --text-color: #111827;                 // Negro grisáceo (mejor que #000 para lectura)
   --muted-color: #6b7280;                // Texto atenuado
   --border-color: #e5e7eb;               // Borde muy sutil
-  --card-shadow: 0 6px 18px rgba(0, 0, 0, .08); // Sombra suave para tarjetas
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, .08); // Sombra suave para tarjetas y elementos elevados
+  --elevated-shadow: 0 8px 30px rgba(0, 0, 0, .10); // Sombra un poco más marcada para navbar
 
   /* Color de marca y su variante "hover" calculada a mano.
      No usar darken()/lighten() de Sass con var(--...): fallará en build. */
-  --brand-primary: #0d6efd;              // Azul Bootstrap
-  --brand-primary-hover: #0b5ed7;        // Azul un poco más oscuro para :hover
+  --brand-primary: #0d6efd;              // Azul Bootstrap (color principal)
+  --brand-primary-hover: #0b5ed7;        // Azul ligeramente más oscuro para :hover
 
   --code-bg: #0f172a;                    // Fondo de bloques de código
   --code-fg: #e2e8f0;                    // Texto de código
   --inline-code-bg: #f8f9fa;             // Fondo para `code` inline
+
+  /* Tipografía y espaciados fluidos con clamp() */
+  --fs-base: clamp(16px, 14px + .4vw, 18px);    // Tamaño base de fuente
+  --fs-h1: clamp(28px, 22px + 1.6vw, 40px);     // Tamaño h1
+  --fs-h2: clamp(22px, 18px + 1.2vw, 32px);     // Tamaño h2
+  --fs-h3: clamp(18px, 16px + .8vw, 24px);      // Tamaño h3
+  --lh: 1.6;                                    // Altura de línea base
+
+  --space-1: clamp(.5rem, .4rem + .4vw, .75rem); // Escala de espacios 1
+  --space-2: clamp(.75rem, .6rem + .6vw, 1rem);  // Escala de espacios 2
+  --space-3: clamp(1rem, .8rem + 1vw, 1.5rem);   // Escala de espacios 3
+
+  --radius: 12px;                        // Radio estándar de bordes
 }
 
 
@@ -38,63 +53,122 @@ html {
 
 body {
   color: var(--text-color); // Color de texto global
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; // Pila de fuentes
   -webkit-font-smoothing: antialiased; // Suavizado de fuentes (WebKit)
   -moz-osx-font-smoothing: grayscale;  // Suavizado de fuentes (Firefox/macOS)
   background: #fff; // Fondo limpio
+  font-size: var(--fs-base); // Tamaño de fuente fluido
+  line-height: var(--lh);    // Altura de línea base
 }
 
 .container {
   max-width: var(--container-max); // Limitar ancho para columnas de texto largas
 }
 
-// Enlaces: sutiles, con subrayado al pasar el cursor (mejora accesibilidad)
+// Enlace "Saltar al contenido" (aparece al enfocar con Tab)
+.skip-link {
+  position: absolute; // Posicionamiento para moverlo fuera de pantalla
+  left: -9999px;      // Lo ocultamos visualmente
+  top: auto;          // Sin afectar el flujo
+  background: #fff;   // Fondo legible
+  color: #000;        // Texto en negro para contraste
+  padding: .5rem 1rem; // Área clicable cómoda
+  border-radius: .5rem; // Bordes redondeados
+  box-shadow: 0 6px 20px rgba(0,0,0,.12); // Sombra para separarlo del contenido
+  z-index: 10000;     // Por encima de la navbar
+}
+.skip-link:focus {
+  left: 1rem;         // Al enfocar, lo traemos a la vista
+  top: 1rem;          // Lo mostramos en la esquina superior
+}
+
+// Enlaces: color principal, subrayado al hover (mejora accesibilidad)
 a {
-  color: var(--brand-primary);
-  text-decoration: none;
-  transition: color .15s ease, text-decoration-color .15s ease;
+  color: var(--brand-primary); // Color del enlace
+  text-decoration: none;       // Sin subrayado por defecto
+  transition: color .15s ease, text-decoration-color .15s ease; // Transiciones suaves
 
   &:hover {
-    /* ❌ Antes: color: darken(var(--brand-primary), 6%); (Sass no acepta var()) */
-    /* ✅ Ahora: usamos la variable predefinida para hover */
-    color: var(--brand-primary-hover);
-    text-decoration: underline;
-    text-decoration-color: rgba(13, 110, 253, .45);
+    color: var(--brand-primary-hover);  // Color en hover
+    text-decoration: underline;         // Subrayado al pasar el ratón
+    text-decoration-color: rgba(13, 110, 253, .45); // Color del subrayado
+  }
+
+  &:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--brand-primary) 65%, white); // Borde de foco accesible
+    outline-offset: 2px; // Separación del borde
+    border-radius: .35rem; // Suavizar el contorno
   }
 }
 
-// Encabezados: márgenes superiores consistentes y peso fuerte
-h1, h2, h3 {
-  margin-top: 1.2rem;
-  font-weight: 700;
+// Encabezados: tamaños fluidos y peso fuerte
+h1 {
+  margin-top: var(--space-3); // Margen superior h1
+  font-weight: 700;           // Peso fuerte
+  font-size: var(--fs-h1);    // Tamaño fluido
+  line-height: 1.2;           // Altura de línea compacta
+}
+h2 {
+  margin-top: var(--space-3); // Margen superior h2
+  font-weight: 700;           // Peso fuerte
+  font-size: var(--fs-h2);    // Tamaño fluido
+  line-height: 1.25;          // Altura de línea
+}
+h3 {
+  margin-top: var(--space-2); // Margen superior h3
+  font-weight: 700;           // Peso fuerte
+  font-size: var(--fs-h3);    // Tamaño fluido
+  line-height: 1.3;           // Altura de línea
 }
 h4, h5, h6 {
-  margin-top: .9rem;
-  font-weight: 600;
+  margin-top: .9rem; // Margen superior para h4-h6
+  font-weight: 600;  // Peso semi-negrita
 }
 
 // Separador horizontal más sutil
 hr {
-  border: 0;
-  border-top: 1px solid var(--border-color);
-  margin: 1.5rem 0;
+  border: 0;                              // Quitamos borde por defecto
+  border-top: 1px solid var(--border-color); // Línea superior tenue
+  margin: 1.5rem 0;                       // Espacio vertical
 }
 
 // Citas con una barra lateral tenue
 blockquote {
-  margin: 1rem 0;
-  padding: .75rem 1rem;
-  border-left: 4px solid var(--border-color);
-  color: var(--muted-color);
-  background: #fafafa;
-  border-radius: 6px;
+  margin: 1rem 0;                // Separación vertical
+  padding: .75rem 1rem;          // Relleno interno
+  border-left: 4px solid var(--border-color); // Barra lateral
+  color: var(--muted-color);     // Texto atenuado
+  background: #fafafa;           // Fondo claro
+  border-radius: 6px;            // Bordes redondeados
 }
 
 // Imágenes fluidas por defecto
 img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 6px; // Un pelín de redondeo queda moderno
+  max-width: 100%; // Nunca exceder el contenedor
+  height: auto;    // Mantener proporción
+  border-radius: 6px; // Un pelín de redondeo moderno
+}
+
+
+// -----------------------------------------------------------------------------
+// NAVBAR STICKY + MICRO-INTERACCIONES
+// -----------------------------------------------------------------------------
+
+.main-nav {
+  transition: background-color .25s ease, box-shadow .25s ease; // Transiciones suaves
+  background-color: rgba(255,255,255,.85); // Fondo semitransparente (con blur si quieres)
+  backdrop-filter: saturate(180%) blur(8px); // Efecto cristal (soporte variable)
+}
+.main-nav.is-scrolled {
+  background-color: #fff;         // Fondo sólido al hacer scroll
+  box-shadow: var(--elevated-shadow); // Sombra marcada
+}
+
+// Enlace activo de la navbar (mejor visibilidad)
+.navbar .nav-link.active {
+  font-weight: 600;         // Un poco más de peso
+  text-underline-offset: 4px; // Separación del subrayado
+  text-decoration: underline;  // Subrayado para indicar activo
 }
 
 
@@ -109,17 +183,17 @@ img {
 
   &:hover {
     transform: translateY(-2px);  // Efecto “levitar” ligero
-    box-shadow: var(--card-shadow);
+    box-shadow: var(--card-shadow); // Sombra suave
   }
 
   .card-title {
-    font-weight: 700;
-    line-height: 1.25;
+    font-weight: 700;   // Título fuerte
+    line-height: 1.25;  // Compacidad
   }
 
   .badge {
-    font-size: .72rem;            // Badge más discreto
-    padding: .35rem .5rem;
+    font-size: .72rem;  // Badge más discreto
+    padding: .35rem .5rem; // Relleno compacto
   }
 }
 
@@ -131,47 +205,63 @@ img {
 /* Aplica esta clase al contenedor que recibe [innerHTML]="... | markdown" */
 .markdown-body {
 
-  h1, h2, h3 { margin-top: 1.2rem; font-weight: 700; }
+  h1, h2, h3 { margin-top: 1.2rem; font-weight: 700; } // Encabezados dentro del markdown
 
-  p { line-height: 1.65; margin: .75rem 0; }
+  p { line-height: 1.65; margin: .75rem 0; } // Párrafos cómodos de leer
 
-  ul, ol { padding-left: 1.25rem; margin: .5rem 0 .75rem; }
+  ul, ol { padding-left: 1.25rem; margin: .5rem 0 .75rem; } // Listas legibles
 
   code {
-    background: var(--inline-code-bg);
-    padding: .15rem .35rem;
-    border-radius: 4px;
-    font-size: .95em;
+    background: var(--inline-code-bg); // Fondo para código en línea
+    padding: .15rem .35rem;            // Relleno
+    border-radius: 4px;                // Bordes suaves
+    font-size: .95em;                  // Un pelín más pequeño
   }
 
   pre {
-    background: var(--code-bg);
-    color: var(--code-fg);
-    padding: .85rem 1rem;
-    border-radius: 8px;
-    overflow: auto;
-    line-height: 1.5;
-    margin: 1rem 0;
+    background: var(--code-bg); // Fondo de bloque de código
+    color: var(--code-fg);      // Texto de bloque de código
+    padding: .85rem 1rem;       // Relleno cómodo
+    border-radius: 8px;         // Bordes
+    overflow: auto;             // Scroll si se desborda
+    line-height: 1.5;           // Altura de línea
+    margin: 1rem 0;             // Separación vertical
 
     code {
-      background: transparent;
-      padding: 0;
-      border-radius: 0;
-      color: inherit;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: transparent;  // Sin fondo adicional
+      padding: 0;               // Sin padding
+      border-radius: 0;         // Sin bordes
+      color: inherit;           // Heredar color del contenedor
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; // Monoespaciada
     }
   }
 
-  img { display: block; margin: .75rem auto; border-radius: 8px; }
+  img { display: block; margin: .75rem auto; border-radius: 8px; } // Imágenes centradas
 
   table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
+    width: 100%;                 // Ocupa todo el ancho
+    border-collapse: collapse;   // Quita espacios internos
+    margin: 1rem 0;              // Separación vertical
 
-    th, td { border: 1px solid var(--border-color); padding: .5rem .6rem; }
-    th { background: #f8f9fa; font-weight: 600; }
+    th, td { border: 1px solid var(--border-color); padding: .5rem .6rem; } // Celdas con borde
+    th { background: #f8f9fa; font-weight: 600; } // Cabeceras sutiles
   }
+}
+
+
+// -----------------------------------------------------------------------------
+// SKELETON LOADERS (efectos de carga elegantes)
+// -----------------------------------------------------------------------------
+
+@keyframes skeleton-pulse {
+  0%   { background-color: #eef1f5; } // Color inicial
+  50%  { background-color: #f5f7fb; } // Pico de la animación
+  100% { background-color: #eef1f5; } // Vuelta al inicio
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.2s ease-in-out infinite; // Pulso infinito
+  border-radius: .5rem; // Bordes suaves
 }
 
 
@@ -179,8 +269,27 @@ img {
 // PEQUEÑOS AJUSTES / UTILIDADES
 // -----------------------------------------------------------------------------
 
-.btn-outline-primary:hover { color: #fff; }
+.btn-outline-primary:hover { color: #fff; } // Botón outline primario: texto blanco al hover
 
+/* Botones: micro-interacción al presionar y foco accesible */
+button:active { transform: scale(.98); } // Efecto de "click" sutil
+button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-primary) 45%, white); // Contorno visible
+  outline-offset: 2px; // Separación del contorno
+  border-radius: .35rem; // Suaviza el contorno
+}
+
+/* Usuarios con preferencia de reducir movimiento: desactiva animaciones transiciones */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: .01ms !important;        // Reduce animaciones
+    animation-iteration-count: 1 !important;     // Solo una repetición
+    transition-duration: .01ms !important;       // Sin transiciones
+    scroll-behavior: auto !important;            // Desactiva scroll suave
+  }
+}
+
+/* Pequeño refuerzo de subrayado en pantallas grandes */
 @media (min-width: 992px) {
-  a:hover { text-decoration-thickness: 2px; }
+  a:hover { text-decoration-thickness: 2px; } // Subrayado más grueso al hover
 }

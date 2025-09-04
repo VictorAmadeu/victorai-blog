@@ -3,7 +3,7 @@
 // 1) Component/Inject: definición del componente y DI de tokens.
 import { Component, Inject } from '@angular/core';
 
-// 2) RouterLink/RouterLinkActive/RouterOutlet: directivas de enrutado usadas en el HTML.
+// 2) RouterLink/RouterLinkActive/RouterOutlet + Router: directivas y navegación programática.
 import {
   RouterLink,
   RouterLinkActive,
@@ -11,7 +11,7 @@ import {
   Router,
 } from '@angular/router';
 
-// 3) DOCUMENT: acceso seguro al DOM (evita usar window/document directamente).
+// 3) DOCUMENT: acceso seguro al DOM (mejor que window/document directo para SSR/testing).
 import { DOCUMENT } from '@angular/common';
 
 // 4) (Opcional) Servicio de Supabase ya no es necesario aquí para newsletter,
@@ -26,7 +26,7 @@ declare const bootstrap: any;
   // 8) Importamos solo lo que el template necesita: router y estado activo.
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.component.html', // 9) Plantilla asociada.
-  styleUrl: './app.component.scss', // 10) Hoja de estilos específica.
+  styleUrl: './app.component.scss', // 10) Hoja de estilos específica (propiedad singular soportada).
 })
 export class AppComponent {
   // 11) Año actual para el footer (evita lógica en la plantilla).
@@ -60,12 +60,11 @@ export class AppComponent {
   }
 
   // 15) Scroll suave a un id del DOM (con pequeños reintentos).
-  //     - Útil si el contenido tarda milisegundos en renderizar.
+  //     - Útil si el contenido tarda milisegundos en renderizar (p.ej., al navegar a Home).
   private smoothScrollToId(id: string, tries = 20, delay = 50): void {
     const el = this.document.getElementById(id); // 15.1) Buscamos el elemento.
     if (el) {
-      // 15.2) Si existe...
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' }); // 15.3) ...scroll suave hasta él.
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' }); // 15.3) Scroll suave.
       return; // 15.4) Terminamos.
     }
     if (tries > 0) {
@@ -87,13 +86,13 @@ export class AppComponent {
     const onHome = path === '/' || path === ''; // 16.4) ¿Estamos ya en Home?
 
     if (onHome) {
-      // 16.5) Sí: scroll directo.
-      this.smoothScrollToId('contacto');
+      this.smoothScrollToId('contacto'); // 16.5) Scroll directo si ya estamos en Home.
     } else {
-      // 16.6) No: navegamos y luego scroll.
       this.router.navigateByUrl('/').then(() => {
-        setTimeout(() => this.smoothScrollToId('contacto'), 0); // 16.7) Esperamos un tick y hacemos scroll.
+        // 16.6) Navegar a Home...
+        setTimeout(() => this.smoothScrollToId('contacto'), 0); // 16.7) ...y al siguiente tick, hacer scroll.
       });
     }
   }
 }
+// Fin de app.component.ts
