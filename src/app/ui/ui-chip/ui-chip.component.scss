@@ -1,0 +1,6 @@
+.ui-chip{
+  border:1px solid #e5e7eb; background:#fff; border-radius: 999px;
+  padding: .25rem .75rem; font-size:.9rem; transition: background .2s, border-color .2s;
+}
+.ui-chip:hover{ background:#f9fafb; }
+.ui-chip.active{ border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 20%, transparent); }

@@ -1,0 +1,10 @@
+.ui-card{
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.25rem;
+  transition: transform .18s ease, box-shadow .18s ease;
+  border: 1px solid rgba(0,0,0,.04);
+}
+.ui-card.clickable:hover{ transform: translateY(-2px); }
+.ui-card:focus-within{ outline: 3px solid color-mix(in srgb, var(--brand) 50%, white); outline-offset: 3px; }

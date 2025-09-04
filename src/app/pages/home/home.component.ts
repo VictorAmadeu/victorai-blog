@@ -15,121 +15,132 @@ import { FormsModule, NgForm } from '@angular/forms';
 // 5) Servicio de datos (Supabase) y tipos fuertes.
 import { SupabaseService, Post, ContactMessage } from '../../supabase.service';
 
+// 6) UI Kit standalone: tarjeta y skeleton (se usan en el HTML de Home).
+import { UiCardComponent } from '../../ui/ui-card/ui-card.component';
+import { SkeletonComponent } from '../../ui/skeleton/skeleton.component';
+
 @Component({
-  selector: 'app-home', // 6) Selector (útil si se incrusta en otra vista).
-  standalone: true, // 7) ✅ Componente standalone (sin NgModule).
-  // 8) Módulos/Directivas/Pipes disponibles para el HTML de esta vista.
-  imports: [CommonModule, RouterLink, FormsModule, DatePipe],
-  templateUrl: './home.component.html', // 9) Plantilla asociada.
-  styleUrls: ['./home.component.scss'], // 10) Estilos específicos (plural).
+  selector: 'app-home', // 7) Selector de este componente.
+  standalone: true, // 8) Standalone (sin NgModule).
+  // 9) Conjunto de directivas/pipes/componentes disponibles en el template.
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    DatePipe,
+    UiCardComponent,
+    SkeletonComponent,
+  ],
+  templateUrl: './home.component.html', // 10) Plantilla asociada.
+  styleUrls: ['./home.component.scss'], // 11) Estilos específicos.
 })
 export class HomeComponent implements OnInit {
   // ===========================================================================
   // A) ESTADO DE “ÚLTIMOS ARTÍCULOS” (desde Supabase)
   // ===========================================================================
-  latestPosts: Post[] = []; // 11) Guarda los posts recientes.
-  postsLoading = true; // 12) Spinner de carga del bloque.
-  postsError: string | null = null; // 13) Mensaje de error si la petición falla.
+  latestPosts: Post[] = []; // 12) Lista de posts recientes.
+  postsLoading = true; // 13) Activa skeletons mientras carga.
+  postsError: string | null = null; // 14) Mensaje de error si falla.
 
   // ===========================================================================
-  // B) ESTADO DEL FORMULARIO DE CONTACTO (reemplaza al boletín)
+  // B) ESTADO DEL FORMULARIO DE CONTACTO
   // ===========================================================================
   contact: ContactMessage = {
-    // 14) Modelo de datos del formulario (two-way binding).
+    // 15) Modelo del formulario.
     name: '',
     email: '',
     subject: '',
     message: '',
   };
-  sending = false; // 15) Estado de envío (deshabilita el botón).
-  successMsg = ''; // 16) Mensaje de éxito para el usuario.
-  errorMsg = ''; // 17) Mensaje de error (si lo hay).
+  sending = false; // 16) Estado de envío.
+  successMsg = ''; // 17) Mensaje de éxito.
+  errorMsg = ''; // 18) Mensaje de error.
 
-  // 18) Inyectamos el servicio de Supabase.
+  // 19) Inyectamos el servicio de Supabase.
   constructor(private readonly supabase: SupabaseService) {}
 
-  // 19) Al montar el componente, pedimos los N últimos artículos.
-  //     👉 OJO: pedimos 2 para dejar un “hueco” a la tarjeta fija de Python.
+  // 20) Al montar el componente, pedimos los N últimos artículos.
   async ngOnInit(): Promise<void> {
-    await this.loadLatestPosts(2); // 19.1) Carga inicial de posts.
+    await this.loadLatestPosts(2); // 20.1) Pedimos 2 (dejamos hueco a la tarjeta fija de Python).
   }
 
-  // 20) Carga de últimos posts con gestión de estados.
+  // 21) Carga de últimos posts con gestión de estados.
   private async loadLatestPosts(limit = 2): Promise<void> {
-    this.postsLoading = true; // 20.1) Activamos loading.
-    this.postsError = null; // 20.2) Limpiamos errores previos.
-    this.latestPosts = []; // 20.3) Limpiamos la lista anterior.
+    this.postsLoading = true; // 21.1) Muestra skeletons.
+    this.postsError = null; // 21.2) Limpia errores previos.
+    this.latestPosts = []; // 21.3) Limpia la lista.
 
-    // 20.4) Llamada al servicio → devuelve posts ordenados por fecha desc.
-    //       (En el servicio ya incluimos 'cover_url' en el SELECT).
+    // 21.4) Petición al servicio (ya incluye 'cover_url' en el SELECT).
     const { data, error } = await this.supabase.getLatestPosts(limit);
 
-    // 20.5) Si hay error, lo mostramos y salimos.
     if (error) {
+      // 21.5) Manejo de error.
       this.postsError = error.message || 'No se pudieron cargar los artículos.';
       this.postsLoading = false;
       return;
     }
 
-    // 20.6) Asignamos datos (o []) y desactivamos loading.
-    this.latestPosts = data ?? [];
-    this.postsLoading = false;
+    this.latestPosts = data ?? []; // 21.6) Asigna datos.
+    this.postsLoading = false; // 21.7) Oculta skeletons.
   }
 
-  // 21) Portada a mostrar en la tarjeta:
-  //     - Si el post trae 'cover_url', se usa.
-  //     - Si no, devolvemos un placeholder local.
+  // 22) Portada a mostrar en la tarjeta:
+  //     - Si el post trae 'cover_url', se usa; si no, placeholder local.
   coverFor(post: Post): string {
-    return (post as any).cover_url || 'assets/img/placeholder-article.jpg';
+    // (Post de Supabase puede traer 'cover_url' sin estar tipado en la interfaz)
+    return (post as any)?.cover_url || 'assets/img/placeholder-article.jpg';
   }
 
-  // 22) Enlace del botón “Leer más”:
+  // 23) Helper: devuelve el slug de categoría (o null si no existe).
+  categorySlug(post: Post): string | null {
+    return (post as any)?.category_slug ?? null;
+  }
+
+  // 24) Helper: humaniza un slug ("deep-learning" → "deep learning").
+  slugLabel(slug: string): string {
+    return slug.replace(/-/g, ' ');
+  }
+
+  // 25) Enlace del botón “Leer más”:
   //     - Si hay category_slug → /categorias/:slug
   //     - Si no, fallback a /articulos
   readMoreLink(post: Post): any[] {
-    return (post as any).category_slug
-      ? ['/categorias', (post as any).category_slug]
-      : ['/articulos'];
+    const slug = this.categorySlug(post);
+    return slug ? ['/categorias', slug] : ['/articulos'];
   }
 
-  // 23) trackBy para *ngFor (mejora rendimiento al no recrear DOM si no cambia el id).
+  // 26) trackBy para *ngFor (mejora rendimiento).
   trackById(_i: number, p: Post): string {
     return p.id;
   }
 
   // ===========================================================================
-  // C) LÓGICA DEL FORMULARIO DE CONTACTO (sustituye al newsletter)
+  // C) LÓGICA DEL FORMULARIO DE CONTACTO
   // ===========================================================================
-
-  // 24) Envío del formulario de contacto (Template-driven).
-  //     - Recibimos la referencia del formulario para validar con `f.invalid`.
   async onSendMessage(f: NgForm): Promise<void> {
-    this.successMsg = ''; // 24.1) Limpiar estados previos.
+    this.successMsg = ''; // 27.1) Limpia estados previos.
     this.errorMsg = '';
 
-    if (f.invalid) return; // 24.2) Si el formulario es inválido, no enviamos.
+    if (f.invalid) return; // 27.2) No enviar si inválido.
 
-    this.sending = true; // 24.3) Activamos estado de envío (UI).
+    this.sending = true; // 27.3) Activa estado de envío.
     try {
-      // 24.4) Llamada al servicio → inserta en la tabla `contact_messages`.
-      const { error } = await this.supabase.sendContactMessage(this.contact);
+      const { error } = await this.supabase.sendContactMessage(this.contact); // 27.4) Inserta en Supabase.
 
       if (!error) {
-        // 24.5) Caso OK → limpiamos el modelo y mostramos confirmación.
+        // 27.5) OK → reseteo + feedback.
         this.contact = { name: '', email: '', subject: '', message: '' };
-        f.resetForm(); // 24.6) Reset visual de controles/validación.
+        f.resetForm();
         this.successMsg = '¡Mensaje enviado! Gracias por tu feedback 🙌';
         return;
       }
 
-      // 24.7) Si hubiera error en la respuesta REST (no debería llegar aquí con try/catch).
-      this.errorMsg = error.message || 'No se pudo enviar el mensaje.';
+      this.errorMsg = error.message || 'No se pudo enviar el mensaje.'; // 27.6) Error de backend.
     } catch (e: any) {
-      // 24.8) Errores de red u otros no-HTTP.
-      this.errorMsg = e?.message || 'Error de conexión. Inténtalo de nuevo.';
+      this.errorMsg = e?.message || 'Error de conexión. Inténtalo de nuevo.'; // 27.7) Error inesperado.
       console.error('Contact error:', e);
     } finally {
-      this.sending = false; // 24.9) Desactivamos el estado de envío.
+      this.sending = false; // 27.8) Desactiva estado de envío.
     }
   }
 }

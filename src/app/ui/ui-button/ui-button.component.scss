@@ -1,0 +1,20 @@
+.ui-btn{
+  border-radius: .65rem; padding: .6rem 1rem;
+  border: 1px solid transparent; font-weight: 600;
+  transition: transform .08s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.ui-btn.--primary{ background: var(--brand); color: #fff; }
+.ui-btn.--primary:hover{ box-shadow: var(--shadow); }
+.ui-btn.--secondary{ background:#f3f4f6; color:#111827; }
+.ui-btn.--ghost{ background: transparent; border-color:#e5e7eb; }
+
+.ui-btn:active{ transform: scale(.98); }
+.ui-btn:focus-visible{ outline: 3px solid color-mix(in srgb, var(--brand) 45%, white); outline-offset: 2px; }
+
+/* Spinner minimalista */
+.spinner{
+  display:inline-block; width:1em; height:1em; margin-right:.5rem;
+  border:.2em solid currentColor; border-right-color: transparent; border-radius:50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin{ to{ transform: rotate(360deg) } }

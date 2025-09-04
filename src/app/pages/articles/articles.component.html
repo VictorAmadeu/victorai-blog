@@ -6,75 +6,70 @@
   <!-- 2) Título de la página -->
   <h2 class="mb-4">Artículos</h2>
 
-  <!-- 3) Estado de carga: se muestra mientras esperamos la respuesta del servicio -->
-  <div *ngIf="loading">Cargando…</div>
-
-  <!-- 4) Estado de error: sólo se muestra cuando NO está cargando y hay mensaje de error -->
-  <div *ngIf="!loading && errorMsg" class="alert alert-danger">
-    {{ errorMsg }}
-  </div>
-
-  <!-- 5) Estado vacío: cuando NO está cargando y no hay posts -->
-  <div *ngIf="!loading && posts.length === 0" class="text-muted">
-    No hay artículos todavía.
-  </div>
-
-  <!-- 6) Grid de tarjetas: g-4 = separación entre columnas/filas -->
-  <div class="row g-4">
-
-    <!-- 7) Iteramos los posts. Usamos trackById (definido en el TS) para rendimiento -->
-    <div class="col-md-6 col-lg-4" *ngFor="let post of posts; trackBy: trackById">
-
-      <!-- 8) Tarjeta con sombra suave (la clase .article-card se define en el SCSS) -->
-      <div class="card h-100 shadow-sm article-card">
-
-        <!-- 9) Cuerpo de la tarjeta: badge, título, fecha y extracto -->
-        <div class="card-body">
-
-          <!-- 10) Badge de CATEGORÍA con enlace a /categorias/:slug
-                   - Sólo se muestra si post.category_slug existe.
-                   - El texto del badge usa slugToLabel() para quitar guiones. -->
-          <a
-            *ngIf="post.category_slug"
-            [routerLink]="['/categorias', post.category_slug]"
-            class="badge rounded-pill bg-light text-dark text-decoration-none mb-2 d-inline-block"
-          >
-            {{ slugToLabel(post.category_slug) }}
-          </a>
-
-          <!-- 11) Título del artículo -->
-          <h5 class="card-title mb-1">{{ post.title }}</h5>
-
-          <!-- 12) Fecha formateada de forma amigable -->
-          <p class="text-muted small mb-3" *ngIf="post.created_at">
-            {{ post.created_at | date:'d MMM yyyy' }}
-          </p>
-
-          <!-- 13) Extracto LIMPIO del contenido (sin sintaxis Markdown)
-                   - stripMarkdown → elimina #, **, enlaces, etc.
-                   - slice:0:220 → recorta a ~220 caracteres para la tarjeta. -->
-          <p class="card-text">
-            {{ post.content | stripMarkdown | slice:0:220 }}
-            <span *ngIf="(post.content | stripMarkdown).length > 220">…</span>
-          </p>
-
-          <!-- 14) (Opcional) Botón "Leer más" si creas la vista de detalle /articulo/:id -->
-          <!--
-          <a [routerLink]="['/articulo', post.id]" class="btn btn-sm btn-outline-primary">
-            Leer más
-          </a>
-          -->
+  <!-- 3) Skeleton loaders mientras loading === true -->
+  <ng-container *ngIf="loading; else listContent">
+    <!-- 3.1) Grid de 3 placeholders usando la clase .skeleton global -->
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4" *ngFor="let n of [1,2,3]">
+        <div class="card h-100 shadow-sm article-card p-3">
+          <!-- 3.2) Bloque imagen esqueleto -->
+          <div class="skeleton" style="height:160px; border-radius:10px;"></div>
+          <!-- 3.3) Líneas de texto esqueleto -->
+          <div class="skeleton mt-3" style="height:18px; width:75%;"></div>
+          <div class="skeleton mt-2" style="height:16px; width:55%;"></div>
         </div>
-        <!-- 15) Fin card-body -->
-
       </div>
-      <!-- 16) Fin card -->
-
     </div>
-    <!-- 17) Fin *ngFor -->
+  </ng-container>
 
-  </div>
-  <!-- 18) Fin row -->
+  <!-- 4) Contenido real cuando termina la carga -->
+  <ng-template #listContent>
+
+    <!-- 4.1) Estado de error: sólo se muestra si hay error -->
+    <div *ngIf="errorMsg" class="alert alert-danger">
+      {{ errorMsg }}
+    </div>
+
+    <!-- 4.2) Estado vacío: cuando no hay posts -->
+    <div *ngIf="!errorMsg && posts.length === 0" class="text-muted">
+      No hay artículos todavía.
+    </div>
+
+    <!-- 4.3) Grid de tarjetas reales -->
+    <div class="row g-4" *ngIf="!errorMsg && posts.length > 0">
+      <!-- 4.3.a) Iteramos los posts con trackById para rendimiento -->
+      <div class="col-md-6 col-lg-4" *ngFor="let post of posts; trackBy: trackById">
+        <!-- 4.3.b) Tarjeta con sombra suave -->
+        <div class="card h-100 shadow-sm article-card">
+          <!-- 4.3.c) Cuerpo de la tarjeta: badge, título, fecha y extracto -->
+          <div class="card-body">
+            <!-- 4.3.c.1) Badge categoría con enlace a /categorias/:slug -->
+            <a
+              *ngIf="post.category_slug"
+              [routerLink]="['/categorias', post.category_slug]"
+              class="badge rounded-pill bg-light text-dark text-decoration-none mb-2 d-inline-block">
+              {{ slugToLabel(post.category_slug) }}
+            </a>
+            <!-- 4.3.c.2) Título -->
+            <h5 class="card-title mb-1">{{ post.title }}</h5>
+            <!-- 4.3.c.3) Fecha -->
+            <p class="text-muted small mb-3" *ngIf="post.created_at">
+              {{ post.created_at | date:'d MMM yyyy' }}
+            </p>
+            <!-- 4.3.c.4) Extracto limpio -->
+            <p class="card-text">
+              {{ post.content | stripMarkdown | slice:0:220 }}
+              <span *ngIf="(post.content | stripMarkdown).length > 220">…</span>
+            </p>
+            <!-- 4.3.c.5) (Opcional) Botón de detalle si existe ruta /articulo/:id
+            <a [routerLink]="['/articulo', post.id]" class="btn btn-sm btn-outline-primary">
+              Leer más
+            </a>
+            -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 
 </div>
-<!-- 19) Fin container -->
