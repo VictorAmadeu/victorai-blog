@@ -1,31 +1,41 @@
 <!-- ========================= HERO (texto + imagen) ========================= -->
+<!-- Contenedor principal con padding vertical -->
 <div class="container py-5">
+  <!-- Fila alineada verticalmente y con separación -->
   <div class="row align-items-center g-4">
 
     <!-- 1) Columna de texto (presentación del blog) -->
     <div class="col-12 col-lg-6">
+      <!-- Título grande y en negrita -->
       <h1 class="display-5 fw-bold">Victor Amadeu AI Blog</h1>
 
-      <!-- 1.2) Párrafos intro -->
+      <!-- Párrafo introductorio 1 -->
       <p class="lead">
         La Inteligencia Artificial (IA) ha dejado de ser un concepto exclusivo de la ciencia ficción para convertirse en una de las tecnologías más influyentes de nuestro tiempo. Desde los asistentes virtuales que utilizamos a diario hasta los algoritmos que recomiendan películas, diagnostican enfermedades o impulsan la conducción autónoma, la IA está transformando la forma en que vivimos, trabajamos y nos relacionamos.
       </p>
+
+      <!-- Párrafo introductorio 2 -->
       <p class="lead">
         Este blog nace con el propósito de acercar el mundo de la Inteligencia Artificial a todos los públicos, ya sean estudiantes, profesionales del sector tecnológico o personas curiosas por comprender cómo funciona esta revolución digital. Aquí encontrarás artículos explicativos, análisis de tendencias, tutoriales prácticos y reflexiones sobre los impactos sociales, éticos y económicos que acompañan a esta tecnología.
       </p>
+
+      <!-- Párrafo introductorio 3 con margen inferior -->
       <p class="lead mb-3">
         El objetivo es claro: informar, inspirar y fomentar el pensamiento crítico sobre la IA, entendiendo no solo su potencial, sino también sus límites y desafíos. Porque hablar de Inteligencia Artificial no es hablar solo de máquinas, sino también del futuro de la humanidad.
       </p>
 
-      <!-- 1.5) Botones de navegación rápida -->
+      <!-- Botones de navegación rápida -->
       <div class="d-flex gap-2 flex-wrap">
+        <!-- Botón a la página de artículos -->
         <a class="btn btn-primary" routerLink="/articulos">Ver artículos</a>
+        <!-- Botón a la página Sobre mí -->
         <a class="btn btn-outline-secondary" routerLink="/sobre-mi">Sobre mí</a>
       </div>
     </div>
 
-    <!-- 2) Columna con imagen del hero -->
+    <!-- 2) Columna de imagen del hero -->
     <div class="col-12 col-lg-6 text-center">
+      <!-- Imagen responsive, redondeada y recortada con object-fit -->
       <img
         src="assets/img/hero.jpg"
         class="img-fluid rounded w-100"
@@ -37,40 +47,50 @@
 </div>
 
 <!-- ======================== ÚLTIMOS ARTÍCULOS (con skeletons) =================== -->
+<!-- Contenedor de la sección de últimos artículos -->
 <div class="container pb-5">
+  <!-- Título de la sección -->
   <h2 class="h3 mb-3">Últimos Artículos</h2>
 
-  <!-- 4) Skeleton loaders mientras postsLoading === true -->
+  <!-- Skeleton loaders: se muestran si postsLoading === true -->
   <ng-container *ngIf="postsLoading; else postsList">
+    <!-- Grid de placeholders -->
     <div class="row g-4">
+      <!-- Repetimos 3 tarjetas esqueleto -->
       <div class="col-12 col-md-4" *ngFor="let n of [1,2,3]">
+        <!-- Tarjeta base de tu UI -->
         <ui-card>
+          <!-- Bloque imagen simulado -->
           <ui-skeleton height="200px"></ui-skeleton>
+          <!-- Línea de título simulada -->
           <ui-skeleton height="18px" width="80%" class="mt-3"></ui-skeleton>
+          <!-- Línea de extracto simulada -->
           <ui-skeleton height="16px" width="60%" class="mt-2"></ui-skeleton>
         </ui-card>
       </div>
     </div>
   </ng-container>
 
-  <!-- 5) Contenido real cuando termina la carga -->
+  <!-- Contenido real cuando termina la carga -->
   <ng-template #postsList>
-    <!-- 5.1) Error -->
+    <!-- Mensaje de error si falló la carga -->
     <div *ngIf="postsError" class="alert alert-danger">
       {{ postsError }}
     </div>
 
-    <!-- 5.2) Vacío -->
+    <!-- Mensaje de vacío si no hay posts -->
     <div *ngIf="!postsError && latestPosts.length === 0" class="text-muted">
       Aún no hay artículos publicados.
     </div>
 
-    <!-- 5.3) Grid de tarjetas reales -->
+    <!-- Grid real de tarjetas (si hay posts) -->
     <div class="row g-4" *ngIf="!postsError && latestPosts.length > 0">
 
-      <!-- 5.3.a) Iteramos posts; trackBy para rendimiento -->
+      <!-- Iteración de posts con trackBy para rendimiento -->
       <div class="col-12 col-md-4" *ngFor="let post of latestPosts; trackBy: trackById">
+        <!-- Tarjeta Bootstrap con sombra suave -->
         <div class="card h-100 shadow-sm">
+          <!-- Imagen de portada (cover_url o placeholder local) -->
           <img
             [src]="coverFor(post)"
             class="card-img-top"
@@ -78,8 +98,9 @@
             loading="lazy"
             style="height:200px; object-fit:cover;">
 
+          <!-- Cuerpo de la tarjeta -->
           <div class="card-body">
-            <!-- 5.3.a.2) Badge de categoría si existe (sin 'as any' en el template) -->
+            <!-- Badge de categoría si el post tiene slug (usamos helpers del TS) -->
             <ng-container *ngIf="categorySlug(post) as slug">
               <a
                 class="badge text-bg-light text-decoration-none mb-2 d-inline-block"
@@ -88,17 +109,21 @@
               </a>
             </ng-container>
 
+            <!-- Título del post -->
             <h5 class="card-title mb-1">{{ post.title }}</h5>
 
+            <!-- Fecha formateada si existe -->
             <p class="text-muted small mb-3" *ngIf="post.created_at">
               {{ post.created_at | date:'d MMM yyyy' }}
             </p>
 
+            <!-- Extracto del contenido con límite de 160 caracteres -->
             <p class="card-text">
               {{ (post.content || '') | slice:0:160 }}
               <span *ngIf="(post.content || '').length > 160">…</span>
             </p>
 
+            <!-- Botón “Leer más”: navega según tenga categoría o no -->
             <a
               class="btn btn-sm btn-outline-primary stretched-link"
               [routerLink]="readMoreLink(post)"
@@ -109,21 +134,28 @@
         </div>
       </div>
 
-      <!-- 5.3.b) TARJETA FIJA: “Ejercicios de Python” -->
+      <!-- Tarjeta fija “Ejercicios de Python” siempre visible -->
       <div class="col-12 col-md-4">
+        <!-- Tarjeta con sombra -->
         <div class="card h-100 shadow-sm">
+          <!-- Imagen local de portada -->
           <img
             src="assets/img/python-card.jpg"
             class="card-img-top"
             alt="Ejercicios de Python"
             loading="lazy"
             style="height:200px; object-fit:cover;">
+          <!-- Cuerpo de tarjeta -->
           <div class="card-body">
+            <!-- Badge de categoría -->
             <span class="badge text-bg-light d-inline-block mb-2">python</span>
+            <!-- Título de tarjeta -->
             <h5 class="card-title mb-1">Ejercicios de Python: guía práctica</h5>
+            <!-- Descripción corta -->
             <p class="text-muted small mb-3">
               Colección de ejercicios prácticos para aprender Python paso a paso.
             </p>
+            <!-- Botón que navega directo a /python -->
             <a
               class="btn btn-sm btn-outline-primary stretched-link"
               routerLink="/python"
@@ -139,26 +171,36 @@
 </div>
 
 <!-- ============================= CHIPS DE CATEGORÍAS ======================= -->
+<!-- Sección con tres accesos rápidos -->
 <section class="container mt-5">
+  <!-- Grid responsivo de 3 columnas -->
   <div class="row g-3">
+    <!-- Chip a la página de categorías (IA) -->
     <div class="col-12 col-md-4">
       <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">IA</a>
     </div>
+    <!-- Chip a la página de categorías (Desarrollo) -->
     <div class="col-12 col-md-4">
       <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">Desarrollo</a>
     </div>
+    <!-- Acceso directo a /python -->
     <div class="col-12 col-md-4">
       <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/python">Python</a>
     </div>
   </div>
 </section>
 
-<!-- ============================ CONTACTO (destino del botón “Mensajes”) === -->
+<!-- ============================ CONTACTO (destino “Mensajes”) ============= -->
+<!-- Sección con ID para que el navbar haga scroll a este bloque -->
 <section id="contacto" class="container mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm">
+  <!-- Título del bloque de contacto -->
   <h3 class="h4">Envíanos tu mensaje</h3>
+  <!-- Descripción breve -->
   <p class="text-secondary">Feedback, sugerencias o preguntas: ¡te leemos!</p>
 
+  <!-- Formulario template-driven con validaciones -->
   <form class="row g-3" #f="ngForm" (ngSubmit)="onSendMessage(f)" novalidate>
+    <!-- Campo: nombre -->
     <div class="col-12 col-md-6">
       <input
         class="form-control form-control-lg"
@@ -172,6 +214,7 @@
       </small>
     </div>
 
+    <!-- Campo: email -->
     <div class="col-12 col-md-6">
       <input
         type="email"
@@ -186,6 +229,7 @@
       </small>
     </div>
 
+    <!-- Campo: asunto -->
     <div class="col-12">
       <input
         class="form-control form-control-lg"
@@ -199,6 +243,7 @@
       </small>
     </div>
 
+    <!-- Campo: mensaje -->
     <div class="col-12">
       <textarea
         class="form-control"
@@ -213,11 +258,14 @@
       </small>
     </div>
 
+    <!-- Acciones del formulario: botón y estados -->
     <div class="col-12 d-grid d-md-flex gap-2">
+      <!-- Botón de enviar (desactivado si inválido o enviando) -->
       <button class="btn btn-primary btn-lg" type="submit" [disabled]="f.invalid || sending">
         {{ sending ? 'Enviando…' : 'Enviar mensaje' }}
       </button>
 
+      <!-- Mensajes de feedback de envío -->
       <span class="text-success align-self-center" *ngIf="successMsg">{{ successMsg }}</span>
       <span class="text-danger align-self-center" *ngIf="errorMsg">{{ errorMsg }}</span>
     </div>

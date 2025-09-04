@@ -1,0 +1,8 @@
+@keyframes pulse {
+  0% { background-color: #eef1f5; }
+  50% { background-color: #f5f7fb; }
+  100% { background-color: #eef1f5; }
+}
+.skeleton{
+  border-radius: .5rem; animation: pulse 1.2s ease-in-out infinite;
+}
