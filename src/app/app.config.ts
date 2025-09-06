@@ -1,69 +1,71 @@
 // app.config.ts — Configuración global de la app en modo Standalone (sin NgModule)
 
-// 1) ApplicationConfig: define los providers globales para bootstrapApplication.
-//    provideZoneChangeDetection: pequeñas optimizaciones de cambio de zona.
-//    importProvidersFrom: permite "traer" un NgModule al mundo Standalone.
+// 1) ApplicationConfig define la forma de arrancar la app;
+//    provideZoneChangeDetection optimiza el change detection en eventos;
+//    importProvidersFrom permite “traer” NgModules al mundo Standalone.
 import {
-  ApplicationConfig,
-  provideZoneChangeDetection,
-  importProvidersFrom,
+  ApplicationConfig, // Tipo del objeto de configuración global
+  provideZoneChangeDetection, // Optimización de eventos para Zone.js
+  importProvidersFrom, // Puente para importar NgModules
 } from '@angular/core';
 
-// 2) Router en Standalone: registramos el enrutador con el arreglo de rutas.
-import { provideRouter } from '@angular/router';
-import { routes } from './app.routes';
+// 2) Router en Standalone: registramos el sistema de rutas de la app.
+import { provideRouter } from '@angular/router'; // Provider del router
+import { routes } from './app.routes'; // Array con las rutas de la app
 
-// 3) HttpClient en Standalone: alta global del cliente HTTP.
-//    withFetch(): usa la API Fetch del navegador (ideal si trabajas con Vite).
+// 3) HttpClient en Standalone: alta global del cliente HTTP (con Fetch API).
 import {
-  provideHttpClient,
-  withFetch /* , withInterceptorsFromDi */,
+  provideHttpClient, // Provider de HttpClient
+  withFetch /* , withInterceptorsFromDi */, // Usa fetch(); descomenta para interceptores DI si los necesitas
 } from '@angular/common/http';
 
-// 4) Highlight.js (wrapper Angular).
-//    - HighlightModule: directiva [highlight] y utilidades.
-//    - HIGHLIGHT_OPTIONS: dónde registramos cómo cargar el core y los lenguajes.
-import { HighlightModule, HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
+// 4) Highlight.js (wrapper Angular) para resaltar código en los artículos.
+import {
+  HighlightModule, // NgModule con la directiva [highlight]
+  HIGHLIGHT_OPTIONS, // Token para configurar carga perezosa
+} from 'ngx-highlightjs';
 
-// 5) Exportamos la configuración que bootstrapApplication(AppComponent, appConfig) usará en main.ts.
+// 5) ✅ Animaciones en Standalone (equivalente a BrowserAnimationsModule).
+//    Necesario si usas triggers/transition/query/animate en componentes.
+import { provideAnimations } from '@angular/platform-browser/animations';
+//    Si no quisieras animaciones pero quieres evitar errores, podrías usar:
+//    import { provideNoopAnimations } from '@angular/platform-browser/animations';
+
 export const appConfig: ApplicationConfig = {
+  // 6) Exportamos la configuración que usará bootstrapApplication
   providers: [
     // --- Rendimiento de zona ---
-    // Agrupa múltiples eventos en un único ciclo de detección → menos trabajo para el change detection.
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideZoneChangeDetection({ eventCoalescing: true }), // Agrupa eventos para menos ciclos de CD
 
     // --- Router ---
-    // Activa el sistema de rutas con el array definido en app.routes.ts.
-    provideRouter(routes),
+    provideRouter(routes), // Activa el enrutador con el arreglo definido en app.routes.ts
 
     // --- HttpClient ---
-    // Habilita HttpClient a nivel global. Si necesitas interceptores, añade withInterceptorsFromDi().
     provideHttpClient(
-      withFetch()
-      // , withInterceptorsFromDi()
+      withFetch() // Usa la Fetch API del navegador (ideal con Vite y SSR)
+      // , withInterceptorsFromDi() // ← Descomenta si defines interceptores vía DI
     ),
 
     // --- Highlight.js global ---
-    // Importamos el NgModule de ngx-highlightjs dentro del mundo Standalone para usar [highlight].
-    importProvidersFrom(HighlightModule),
+    importProvidersFrom(HighlightModule), // Importamos el NgModule dentro del mundo Standalone
 
-    // ⚠️ Registro del CORE + lenguajes.
-    // Si no cargas el core de highlight.js, aparece el error:
-    // "[HLJS] The core library was not imported!"
     {
+      // Configuramos cómo y qué lenguajes carga ngx-highlightjs
       provide: HIGHLIGHT_OPTIONS,
       useValue: {
-        // Carga perezosa del CORE de highlight.js
-        coreLibraryLoader: () => import('highlight.js/lib/core'),
-
-        // Lenguajes que queremos registrar (mínimo Python en tu caso).
+        coreLibraryLoader: () => import('highlight.js/lib/core'), // Carga perezosa del core
         languages: {
-          python: () => import('highlight.js/lib/languages/python'),
-          // Puedes añadir más si los necesitas:
+          python: () => import('highlight.js/lib/languages/python'), // Lenguaje imprescindible en tu blog
+          // Puedes añadir más si lo necesitas:
           // typescript: () => import('highlight.js/lib/languages/typescript'),
           // json: () => import('highlight.js/lib/languages/json'),
         },
       },
     },
+
+    // --- Animaciones ---
+    provideAnimations(), // Habilita Angular Animations para las transiciones de rutas, etc.
+    // Alternativa sin animaciones reales (desactiva transiciones):
+    // provideNoopAnimations(),
   ],
 };
