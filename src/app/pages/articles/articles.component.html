@@ -6,88 +6,113 @@
   <!-- 2) Título de la página -->
   <h2 class="mb-4">Artículos</h2>
 
-  <!-- 3) Skeleton loaders mientras loading === true -->
+  <!-- 3) Toolbar de búsqueda y filtros por categoría (front-only, sin tocar backend) -->
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <!-- 3.1) Input controlado con ngModel: actualiza searchTerm en tiempo real -->
+    <input
+      class="form-control"
+      placeholder="Buscar…"
+      [(ngModel)]="searchTerm"
+      aria-label="Buscar artículos" />
+
+    <!-- 3.2) Chips de categoría: cambian activeCategory al hacer clic -->
+    <ui-chip (click)="activeCategory=''"   [active]="activeCategory===''">Todas</ui-chip>
+  </div>
+
+  <!-- 4) Skeleton loaders mientras loading === true -->
   <ng-container *ngIf="loading; else listContent">
-    <!-- Grid de placeholders para mantener el layout -->
+    <!-- 4.1) Grid de placeholders para mantener el layout -->
     <div class="row g-4">
-      <!-- Tres tarjetas esqueleto -->
+      <!-- 4.2) Tres tarjetas esqueleto -->
       <div class="col-md-6 col-lg-4" *ngFor="let n of [1,2,3]">
-        <!-- Tarjeta con padding para dibujar bloques skeleton -->
+        <!-- 4.3) Tarjeta con padding para dibujar bloques skeleton -->
         <div class="card h-100 shadow-sm article-card p-3">
-          <!-- Bloque que simula la imagen -->
+          <!-- 4.4) Bloque que simula la imagen -->
           <div class="skeleton" style="height:160px; border-radius:10px;"></div>
-          <!-- Línea de título simulada -->
+          <!-- 4.5) Línea de título simulada -->
           <div class="skeleton mt-3" style="height:18px; width:75%;"></div>
-          <!-- Línea de extracto simulada -->
+          <!-- 4.6) Línea de extracto simulada -->
           <div class="skeleton mt-2" style="height:16px; width:55%;"></div>
         </div>
       </div>
     </div>
   </ng-container>
 
-  <!-- 4) Contenido real cuando termina la carga -->
+  <!-- 5) Contenido real cuando termina la carga -->
   <ng-template #listContent>
 
-    <!-- 4.1) Estado de error -->
+    <!-- 5.1) Estado de error: sólo se muestra si hay error -->
     <div *ngIf="errorMsg" class="alert alert-danger">
       {{ errorMsg }}
     </div>
 
-    <!-- 4.2) Estado vacío -->
+    <!-- 5.2) Estado vacío ABSOLUTO (la consulta no devolvió posts) -->
     <div *ngIf="!errorMsg && posts.length === 0" class="text-muted">
       No hay artículos todavía.
     </div>
 
-    <!-- 4.3) Grid real de tarjetas -->
-    <div class="row g-4" *ngIf="!errorMsg && posts.length > 0">
+    <!-- 5.3) Estado vacío TRAS FILTRAR (sí hay posts, pero ninguno coincide con el filtro) -->
+    <div
+      *ngIf="
+        !errorMsg &&
+        posts.length > 0 &&
+        (posts | filterPosts: searchTerm : activeCategory).length === 0
+      "
+      class="text-muted">
+      No hay resultados para tu búsqueda/filtrado.
+    </div>
 
-      <!-- Iteración de posts con trackBy definido en el TS -->
-      <div class="col-md-6 col-lg-4" *ngFor="let post of posts; trackBy: trackById">
+    <!-- 5.4) Grid real de tarjetas (hay posts y la búsqueda/filtrado devuelve resultados) -->
+    <div
+      class="row g-4"
+      *ngIf="
+        !errorMsg &&
+        (posts | filterPosts: searchTerm : activeCategory).length > 0
+      ">
 
-        <!-- Tarjeta con sombra suave (estilo global .article-card) -->
-        <div class="card h-100 shadow-sm article-card">
+      <!-- 5.4.a) Iteramos posts FILTRADOS; trackBy para rendimiento -->
+      <div
+        class="col-md-6 col-lg-4"
+        *ngFor="let post of posts | filterPosts: searchTerm : activeCategory; trackBy: trackById">
 
-          <!-- Cuerpo de la tarjeta -->
-          <div class="card-body">
+        <!-- 5.4.b) Tu tarjeta de UI.
+               IMPORTANTE: usamos [clickable]="true" (booleano) para evitar el error de tipo. -->
+        <ui-card [clickable]="true">
+          <!-- 5.4.c) Badge de categoría con enlace a /categorias/:slug (si existe) -->
+          <a
+            *ngIf="post.category_slug"
+            [routerLink]="['/categorias', post.category_slug]"
+            class="badge rounded-pill bg-light text-dark text-decoration-none mb-2 d-inline-block">
+            {{ slugToLabel(post.category_slug) }}
+          </a>
 
-            <!-- Badge de categoría con enlace a /categorias/:slug (si existe) -->
-            <a
-              *ngIf="post.category_slug"
-              [routerLink]="['/categorias', post.category_slug]"
-              class="badge rounded-pill bg-light text-dark text-decoration-none mb-2 d-inline-block">
-              {{ slugToLabel(post.category_slug) }}
-            </a>
+          <!-- 5.4.d) Título del artículo -->
+          <h5 class="card-title mb-1">{{ post.title }}</h5>
 
-            <!-- Título del artículo -->
-            <h5 class="card-title mb-1">{{ post.title }}</h5>
+          <!-- 5.4.e) Fecha amigable si viene del backend -->
+          <p class="text-muted small mb-3" *ngIf="post.created_at">
+            {{ post.created_at | date:'d MMM yyyy' }}
+          </p>
 
-            <!-- Fecha amigable si viene del backend -->
-            <p class="text-muted small mb-3" *ngIf="post.created_at">
-              {{ post.created_at | date:'d MMM yyyy' }}
-            </p>
+          <!-- 5.4.f) Extracto limpio (pipe stripMarkdown + slice) -->
+          <p class="card-text">
+            {{ post.content | stripMarkdown | slice:0:220 }}
+            <span *ngIf="(post.content | stripMarkdown).length > 220">…</span>
+          </p>
 
-            <!-- Extracto limpio (pipe stripMarkdown + slice) -->
-            <p class="card-text">
-              {{ post.content | stripMarkdown | slice:0:220 }}
-              <span *ngIf="(post.content | stripMarkdown).length > 220">…</span>
-            </p>
-
-            <!-- (Opcional) Botón a detalle si existe ruta /articulo/:id
-            <a [routerLink]="['/articulo', post.id]" class="btn btn-sm btn-outline-primary">
-              Leer más
-            </a>
-            -->
-          </div>
-          <!-- Fin card-body -->
-
-        </div>
-        <!-- Fin card -->
+          <!-- 5.4.g) (Opcional) Botón a detalle si tienes ruta /articulo/:id
+          <a [routerLink]="['/articulo', post.id]" class="btn btn-sm btn-outline-primary">
+            Leer más
+          </a>
+          -->
+        </ui-card>
+        <!-- Fin ui-card -->
 
       </div>
-      <!-- Fin *ngFor -->
+      <!-- Fin *ngFor filtrado -->
 
     </div>
-    <!-- Fin row -->
+    <!-- Fin grid real -->
 
   </ng-template>
   <!-- Fin listContent -->
