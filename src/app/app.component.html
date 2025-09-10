@@ -111,13 +111,7 @@
 </nav> <!-- /.navbar -->
 
 <!-- Contenedor principal con TRANSICIONES DE RUTA -->
-<!--
-  - Añadimos #o="outlet" para poder leer el estado del RouterOutlet.
-  - [@routeAnimations]="prepareRoute(o)" aplica la animación definida en TS.
-  - tabindex="-1" mantiene accesible el salto desde el skip-link.
--->
-<!-- Contenedor principal con TRANSICIONES DE RUTA -->
-<!-- Usamos o.isActivated para evitar NG04012 -->
+<!-- Usamos o.isActivated para evitar NG04012 en el primer render -->
 <main
   id="main-content"
   class="py-4 py-md-5 bg-body-tertiary"
@@ -127,8 +121,15 @@
 >
   <!-- Aquí Angular inyecta la vista de la ruta activa -->
   <router-outlet #o="outlet"></router-outlet>
-</main>
 
+  <!-- ===================================================== -->
+  <!--  Botón flotante “Volver arriba” (micro-interacción)   -->
+  <!--  - Usa tu componente UI <ui-scroll-top>               -->
+  <!--  - Queda fijo y visible tras hacer scroll             -->
+  <!--  - No necesita props adicionales (se autogestiona)    -->
+  <!-- ===================================================== -->
+  <ui-scroll-top></ui-scroll-top>
+</main>
 
 <!-- Pie de página con enlaces externos (landmark semántico <footer>) -->
 <footer class="border-top py-4" role="contentinfo" aria-label="Información del sitio">
