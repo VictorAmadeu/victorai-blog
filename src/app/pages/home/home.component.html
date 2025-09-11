@@ -26,10 +26,16 @@
 
       <!-- Botones de navegación rápida -->
       <div class="d-flex gap-2 flex-wrap">
-        <!-- Botón a la página de artículos -->
-        <a class="btn btn-primary" routerLink="/articulos">Ver artículos</a>
-        <!-- Botón a la página Sobre mí -->
-        <a class="btn btn-outline-secondary" routerLink="/sobre-mi">Sobre mí</a>
+        <!-- Botón a la página de artículos (añadimos ícono) -->
+        <a class="btn btn-primary" routerLink="/articulos" aria-label="Ver artículos">
+          <i class="bi bi-journal-text" aria-hidden="true"></i>
+          <span class="ms-1">Ver artículos</span>
+        </a>
+        <!-- Botón a la página Sobre mí (añadimos ícono) -->
+        <a class="btn btn-outline-secondary" routerLink="/sobre-mi" aria-label="Sobre mí">
+          <i class="bi bi-person-circle" aria-hidden="true"></i>
+          <span class="ms-1">Sobre mí</span>
+        </a>
       </div>
     </div>
 
@@ -123,12 +129,13 @@
               <span *ngIf="(post.content || '').length > 160">…</span>
             </p>
 
-            <!-- Botón “Leer más”: navega según tenga categoría o no -->
+            <!-- Botón “Leer más” con ícono -->
             <a
               class="btn btn-sm btn-outline-primary stretched-link"
               [routerLink]="readMoreLink(post)"
               [attr.aria-label]="'Leer más sobre ' + post.title">
-              Leer más
+              <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
+              <span class="ms-1">Leer más</span>
             </a>
           </div>
         </div>
@@ -155,12 +162,13 @@
             <p class="text-muted small mb-3">
               Colección de ejercicios prácticos para aprender Python paso a paso.
             </p>
-            <!-- Botón que navega directo a /python -->
+            <!-- Botón que navega directo a /python con ícono -->
             <a
               class="btn btn-sm btn-outline-primary stretched-link"
               routerLink="/python"
               aria-label="Ir a ejercicios de Python">
-              Leer más
+              <i class="bi bi-code-slash" aria-hidden="true"></i>
+              <span class="ms-1">Leer más</span>
             </a>
           </div>
         </div>
@@ -171,21 +179,30 @@
 </div>
 
 <!-- ============================= CHIPS DE CATEGORÍAS ======================= -->
-<!-- Sección con tres accesos rápidos -->
+<!-- Sección con tres accesos rápidos (añadimos íconos dentro de los botones) -->
 <section class="container mt-5">
   <!-- Grid responsivo de 3 columnas -->
   <div class="row g-3">
     <!-- Chip a la página de categorías (IA) -->
     <div class="col-12 col-md-4">
-      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">IA</a>
+      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias" aria-label="Categorías de IA">
+        <i class="bi bi-tag" aria-hidden="true"></i>
+        <span class="ms-1">IA</span>
+      </a>
     </div>
     <!-- Chip a la página de categorías (Desarrollo) -->
     <div class="col-12 col-md-4">
-      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias">Desarrollo</a>
+      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/categorias" aria-label="Categorías de Desarrollo">
+        <i class="bi bi-tag" aria-hidden="true"></i>
+        <span class="ms-1">Desarrollo</span>
+      </a>
     </div>
     <!-- Acceso directo a /python -->
     <div class="col-12 col-md-4">
-      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/python">Python</a>
+      <a class="btn btn-light w-100 py-3 shadow-sm" routerLink="/python" aria-label="Ir a Python">
+        <i class="bi bi-tag" aria-hidden="true"></i>
+        <span class="ms-1">Python</span>
+      </a>
     </div>
   </div>
 </section>
@@ -260,9 +277,10 @@
 
     <!-- Acciones del formulario: botón y estados -->
     <div class="col-12 d-grid d-md-flex gap-2">
-      <!-- Botón de enviar (desactivado si inválido o enviando) -->
-      <button class="btn btn-primary btn-lg" type="submit" [disabled]="f.invalid || sending">
-        {{ sending ? 'Enviando…' : 'Enviar mensaje' }}
+      <!-- Botón de enviar (con ícono bi-send; se mantiene la lógica de deshabilitado) -->
+      <button class="btn btn-primary btn-lg" type="submit" [disabled]="f.invalid || sending" aria-label="Enviar mensaje">
+        <i class="bi bi-send" aria-hidden="true"></i>
+        <span class="ms-1">{{ sending ? 'Enviando…' : 'Enviar mensaje' }}</span>
       </button>
 
       <!-- Mensajes de feedback de envío -->

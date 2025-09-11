@@ -1,4 +1,6 @@
 // src/app/pages/home/home.component.ts — Componente Standalone de la Home
+// Nota: Para “Opción A (Bootstrap Icons)” no se importan librerías en TS.
+// Los íconos son CSS/HTML (clases .bi...) ya añadidas en angular.json.
 
 // 1) Component + OnInit para cargar datos al montar la vista.
 import { Component, OnInit } from '@angular/core';
