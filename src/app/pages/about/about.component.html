@@ -1,34 +1,47 @@
-<div class="container py-5">
-  <!-- Encabezado con foto -->
-  <div class="row g-4 align-items-center mb-4">
-    <!-- Foto: 100% ancho en móvil, 4/12 en ≥md; centrada en móvil -->
-    <div class="col-12 col-md-4 text-center text-md-start">
-      <img
-        src="assets/img/victor-amadeu.jpg"
-        alt="Foto de Victor Amadeu Braga Heleno"
-        class="img-fluid rounded-4 shadow-sm about-photo d-inline-block"
-        loading="lazy">
+<!-- ====================================================================== --> <!-- SOBRE MÍ — estructura mejorada solo con HTML (Bootstrap) --> <!-- - Se añaden tarjetas (card) para separar bloques y mejorar lectura --> <!-- - NO se cambian textos ni CSS global; se mantiene .modern-font --> <!-- ====================================================================== --> <div class="modern-font"><!-- Aplica Poppins solo a esta página --> <div class="container py-5"><!-- Contenedor principal con respiro vertical -->
+<!-- ========================== HERO (foto + texto) ===================== -->
+<section class="card shadow-sm border-0 mb-4"><!-- Tarjeta para crear bloque claro -->
+  <div class="card-body p-4 p-md-5"><!-- Espaciado cómodo en todas las pantallas -->
+
+    <div class="row g-4 align-items-center"><!-- Disposición en 2 columnas -->
+      <!-- Columna de foto -->
+      <div class="col-12 col-md-4 text-center text-md-start">
+        <img
+          src="assets/img/victor-amadeu.jpg"
+          alt="Foto de Victor Amadeu Braga Heleno"
+          class="img-fluid rounded-4 shadow-sm about-photo d-inline-block"
+          loading="lazy">
+      </div>
+
+      <!-- Columna de texto -->
+      <div class="col-12 col-md-8 text-center text-md-start">
+        <h1 class="display-6 fw-bold mb-3">Sobre mí</h1>
+        <!-- Párrafo de presentación (lead para mayor legibilidad) -->
+        <p class="lead mb-3">
+          ¡Hola! 👋 Soy <strong>Victor Amadeu Braga Heleno</strong>, un apasionado desarrollador web junior y estudiante de FP de Grado Superior en Desarrollo de Aplicaciones Web (CESUR, Madrid).
+        </p>
+        <!-- Párrafo de tecnología (cuerpo normal para diferenciar jerarquía) -->
+        <p class="mb-3">
+          Mi camino en la programación se ha construido a través de proyectos prácticos donde he trabajado con tecnologías como HTML5, CSS3, JavaScript (ES6+), PHP, SQL, Vue.js, React, Node.js, Angular, Spring Boot y Laravel, siempre con el objetivo de crear soluciones útiles, eficientes y bien estructuradas.
+        </p>
+        <!-- Párrafo de valores (último del bloque) -->
+        <p class="mb-0">
+          Me defino como una persona responsable, organizada y metódica, con un perfil competencial tipo “El Árbitro”. Disfruto trabajando en entornos estructurados, donde puedo aplicar pensamiento racional y seguir procesos claros para alcanzar objetivos comunes. Al mismo tiempo, valoro la colaboración, la flexibilidad y el entusiasmo por aprender, cualidades que me permiten adaptarme fácilmente a equipos diversos y a entornos tecnológicos en constante cambio.
+        </p>
+      </div>
     </div>
 
-    <!-- Texto: 100% en móvil, 8/12 en ≥md; centrado en móvil, izquierdo en ≥md -->
-    <div class="col-12 col-md-8 text-center text-md-start">
-      <h1 class="display-6 fw-bold mb-3">Sobre mí</h1>
-      <p class="lead mb-2">
-        ¡Hola! 👋 Soy <strong>Victor Amadeu Braga Heleno</strong>, un apasionado desarrollador web junior y estudiante de FP de Grado Superior en Desarrollo de Aplicaciones Web (CESUR, Madrid).
-      </p>
-      <p class="mb-2">
-        Mi camino en la programación se ha construido a través de proyectos prácticos donde he trabajado con tecnologías como HTML5, CSS3, JavaScript (ES6+), PHP, SQL, Vue.js, React, Node.js, Angular, Spring Boot y Laravel, siempre con el objetivo de crear soluciones útiles, eficientes y bien estructuradas.
-      </p>
-      <p class="mb-0">
-        Me defino como una persona responsable, organizada y metódica, con un perfil competencial tipo “El Árbitro”. Disfruto trabajando en entornos estructurados, donde puedo aplicar pensamiento racional y seguir procesos claros para alcanzar objetivos comunes. Al mismo tiempo, valoro la colaboración, la flexibilidad y el entusiasmo por aprender, cualidades que me permiten adaptarme fácilmente a equipos diversos y a entornos tecnológicos en constante cambio.
-      </p>
-    </div>
   </div>
+</section>
+<!-- ======================== /HERO (foto + texto) ====================== -->
 
-  <!-- Experiencia y proyectos -->
-  <section class="mb-4">
+<!-- ================== EXPERIENCIA Y PROYECTOS DESTACADOS ============== -->
+<section class="card shadow-sm border-0 mb-4"><!-- Tarjeta para separar el bloque -->
+  <div class="card-body p-4 p-md-5">
     <h2 class="h4 mb-3 text-center text-md-start">🚀 Experiencia y Proyectos Destacados</h2>
-    <ul class="list-group">
+
+    <!-- Lista en card: list-group-flush para integrarse con la tarjeta -->
+    <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <strong>Origem Açaí</strong> – Sistema de gestión para tienda de açaí con Java, Spring Boot, JavaFX y MySQL.
       </li>
@@ -51,68 +64,110 @@
         <strong>Minijuego de Números</strong> – Juego interactivo en HTML, CSS y JavaScript.
       </li>
     </ul>
-  </section>
+  </div>
+</section>
+<!-- =============== /EXPERIENCIA Y PROYECTOS DESTACADOS ================= -->
 
-  <!-- Formación -->
-  <section class="mb-4">
+<!-- ===================== FORMACIÓN Y CERTIFICACIONES ==================== -->
+<section class="card shadow-sm border-0 mb-4">
+  <div class="card-body p-4 p-md-5">
     <h2 class="h4 mb-3 text-center text-md-start">🎓 Formación y Certificaciones</h2>
-    <p class="mb-2">
-      He complementado mis estudios con cursos en plataformas reconocidas como <strong>Curso en Vídeo, Rocketseat, OpenBootcamp, Founderz, ScholarHat y Simplilearn</strong>, en áreas como:
-    </p>
-    <ul class="mb-0">
-      <li>HTML5, CSS3, JavaScript, PHP, MySQL.</li>
-      <li>Git y GitHub, Node.js, React, Inteligencia Artificial.</li>
-      <li>Algoritmos y fundamentos de programación.</li>
-      <li>Inglés aplicado a la informática.</li>
-    </ul>
-  </section>
 
-  <!-- Tecnologías -->
-  <section class="mb-4">
-    <h2 class="h4 mb-3 text-center text-md-start">🛠️ Tecnologías y Herramientas</h2>
-    <div class="row g-2">
-      <div class="col-12 col-lg-6">
-        <p class="mb-1"><strong>Lenguajes:</strong></p>
-        <div class="d-flex flex-wrap gap-2">
-          <span class="badge text-bg-light">HTML5</span>
-          <span class="badge text-bg-light">CSS3</span>
-          <span class="badge text-bg-light">JavaScript (ES6+)</span>
-          <span class="badge text-bg-light">Java</span>
-          <span class="badge text-bg-light">PHP</span>
-          <span class="badge text-bg-light">SQL</span>
-        </div>
+    <!-- Dos columnas: texto a la izquierda, lista a la derecha en ≥md -->
+    <div class="row g-3">
+      <div class="col-12 col-md-7">
+        <p class="mb-2">
+          He complementado mis estudios con cursos en plataformas reconocidas como <strong>Curso en Vídeo, Rocketseat, OpenBootcamp, Founderz, ScholarHat y Simplilearn</strong>, en áreas como:
+        </p>
       </div>
-      <div class="col-12 col-lg-6">
-        <p class="mb-1"><strong>Frameworks/Librerías:</strong></p>
-        <div class="d-flex flex-wrap gap-2">
-          <span class="badge text-bg-light">Vue.js</span>
-          <span class="badge text-bg-light">React</span>
-          <span class="badge text-bg-light">Spring Boot</span>
-          <span class="badge text-bg-light">Laravel</span>
-          <span class="badge text-bg-light">Bootstrap</span>
-          <span class="badge text-bg-light">Express.js</span>
-          <span class="badge text-bg-light">Angular</span>
-        </div>
-      </div>
-      <div class="col-12 col-lg-6">
-        <p class="mb-1 mt-2 mt-lg-3"><strong>DevOps/Herramientas:</strong></p>
-        <div class="d-flex flex-wrap gap-2">
-          <span class="badge text-bg-light">Git/GitHub</span>
-          <span class="badge text-bg-light">Docker</span>
-          <span class="badge text-bg-light">XAMPP</span>
-          <span class="badge text-bg-light">MySQL Workbench</span>
-          <span class="badge text-bg-light">VS Code</span>
-        </div>
-      </div>
-      <div class="col-12 col-lg-6">
-        <p class="mb-1 mt-2 mt-lg-3"><strong>Idiomas:</strong></p>
-        <div class="d-flex flex-wrap gap-2">
-          <span class="badge text-bg-light">Portugués (nativo)</span>
-          <span class="badge text-bg-light">Español (C1)</span>
-          <span class="badge text-bg-light">Inglés (B1)</span>
-        </div>
+      <div class="col-12 col-md-5">
+        <!-- Lista compacta y clara -->
+        <ul class="mb-0">
+          <li>HTML5, CSS3, JavaScript, PHP, MySQL.</li>
+          <li>Git y GitHub, Node.js, React, Inteligencia Artificial.</li>
+          <li>Algoritmos y fundamentos de programación.</li>
+          <li>Inglés aplicado a la informática.</li>
+        </ul>
       </div>
     </div>
-  </section>
-  
-</div>
+  </div>
+</section>
+<!-- ================== /FORMACIÓN Y CERTIFICACIONES ===================== -->
+
+<!-- ======================= TECNOLOGÍAS Y HERRAMIENTAS ================== -->
+<section class="card shadow-sm border-0">
+  <div class="card-body p-4 p-md-5">
+    <h2 class="h4 mb-3 text-center text-md-start">🛠️ Tecnologías y Herramientas</h2>
+
+    <!-- Cuadrícula de mini-tarjetas por categoría para lectura rápida -->
+    <div class="row g-3">
+      <!-- Lenguajes -->
+      <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 bg-light-subtle">
+          <div class="card-body">
+            <p class="mb-1 fw-semibold">Lenguajes</p>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge text-bg-light">HTML5</span>
+              <span class="badge text-bg-light">CSS3</span>
+              <span class="badge text-bg-light">JavaScript (ES6+)</span>
+              <span class="badge text-bg-light">Java</span>
+              <span class="badge text-bg-light">PHP</span>
+              <span class="badge text-bg-light">SQL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Frameworks / Librerías -->
+      <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 bg-light-subtle">
+          <div class="card-body">
+            <p class="mb-1 fw-semibold">Frameworks/Librerías</p>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge text-bg-light">Vue.js</span>
+              <span class="badge text-bg-light">React</span>
+              <span class="badge text-bg-light">Spring Boot</span>
+              <span class="badge text-bg-light">Laravel</span>
+              <span class="badge text-bg-light">Bootstrap</span>
+              <span class="badge text-bg-light">Express.js</span>
+              <span class="badge text-bg-light">Angular</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DevOps / Herramientas -->
+      <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 bg-light-subtle">
+          <div class="card-body">
+            <p class="mb-1 fw-semibold">DevOps/Herramientas</p>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge text-bg-light">Git/GitHub</span>
+              <span class="badge text-bg-light">Docker</span>
+              <span class="badge text-bg-light">XAMPP</span>
+              <span class="badge text-bg-light">MySQL Workbench</span>
+              <span class="badge text-bg-light">VS Code</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Idiomas -->
+      <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 bg-light-subtle">
+          <div class="card-body">
+            <p class="mb-1 fw-semibold">Idiomas</p>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge text-bg-light">Portugués (nativo)</span>
+              <span class="badge text-bg-light">Español (C1)</span>
+              <span class="badge text-bg-light">Inglés (B1)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /row -->
+  </div>
+</section>
+<!-- ==================== /TECNOLOGÍAS Y HERRAMIENTAS ==================== -->
+
+</div><!-- /container --> </div><!-- /.modern-font -->

@@ -1,206 +1,214 @@
+//src/styles.scss:
+// -----------------------------------------------------------------------------
+// TIPOGRAFÍA (Google Fonts) CARGADA AL INICIO
+// -----------------------------------------------------------------------------
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap'); // Carga Poppins (400/600/700) para usarla donde apliquemos .modern-font
+
 // -----------------------------------------------------------------------------
 // IMPORTS DE ESTILOS DE TERCEROS
 // -----------------------------------------------------------------------------
 
 @import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap: grid, utilidades y componentes
-@import "highlight.js/styles/github.css";       // Tema de resaltado de código (GitHub) para highlight.js
+@import "highlight.js/styles/github.css"; // Tema de resaltado de código (GitHub) para highlight.js
 // @import "bootstrap-icons/font/bootstrap-icons.css"; // (Opcional) Iconos Bootstrap si instalas bootstrap-icons
-
 
 // -----------------------------------------------------------------------------
 // VARIABLES (tokens de diseño: colores, sombras, tamaños)
 // -----------------------------------------------------------------------------
 
 :root {
-  --container-max: 980px;                // Ancho máximo de lectura (mejor legibilidad)
-  --text-color: #111827;                 // Negro grisáceo (mejor que #000 para lectura)
-  --muted-color: #6b7280;                // Texto atenuado
-  --border-color: #e5e7eb;               // Borde muy sutil
-  --card-shadow: 0 6px 18px rgba(0, 0, 0, .08); // Sombra suave para tarjetas/elementos
-  --elevated-shadow: 0 8px 30px rgba(0, 0, 0, .10); // Sombra algo más marcada (navbar)
+--container-max: 980px; // Ancho máximo de lectura (mejor legibilidad)
+--text-color: #111827; // Negro grisáceo (mejor que #000 para lectura)
+--muted-color: #6b7280; // Texto atenuado
+--border-color: #e5e7eb; // Borde muy sutil
+--card-shadow: 0 6px 18px rgba(0, 0, 0, .08); // Sombra suave para tarjetas/elementos
+--elevated-shadow: 0 8px 30px rgba(0, 0, 0, .10); // Sombra algo más marcada (navbar)
 
-  /* Color de marca y su variante "hover".
-     ⚠️ No usar darken()/lighten() de Sass con var(--...): fallará en build. */
-  --brand-primary: #0d6efd;              // Azul Bootstrap (color principal)
-  --brand-primary-hover: #0b5ed7;        // Azul ligeramente más oscuro para :hover
+/* Color de marca y su variante "hover".
+⚠️ No usar darken()/lighten() de Sass con var(--...): fallará en build. */
+--brand-primary: #0d6efd; // Azul Bootstrap (color principal)
+--brand-primary-hover: #0b5ed7; // Azul ligeramente más oscuro para :hover
 
-  /* Alias para compatibilidad con componentes antiguos (p. ej. scroll-top) */
-  --brand: var(--brand-primary);         // Alias → usa el color principal
-  --shadow: var(--card-shadow);          // Alias → usa la sombra estándar
+/* Alias para compatibilidad con componentes antiguos (p. ej. scroll-top) */
+--brand: var(--brand-primary); // Alias → usa el color principal
+--shadow: var(--card-shadow); // Alias → usa la sombra estándar
 
-  --code-bg: #0f172a;                    // Fondo de bloques de código
-  --code-fg: #e2e8f0;                    // Texto de código
-  --inline-code-bg: #f8f9fa;             // Fondo para `code` inline
+--code-bg: #0f172a; // Fondo de bloques de código
+--code-fg: #e2e8f0; // Texto de código
+--inline-code-bg: #f8f9fa; // Fondo para code inline
 
-  /* Tipografía y espaciados fluidos con clamp() (min, preferido, máx) */
-  --fs-base: clamp(16px, 14px + .4vw, 18px);    // Tamaño base de fuente
-  --fs-h1: clamp(28px, 22px + 1.6vw, 40px);     // Tamaño h1
-  --fs-h2: clamp(22px, 18px + 1.2vw, 32px);     // Tamaño h2
-  --fs-h3: clamp(18px, 16px + .8vw, 24px);      // Tamaño h3
-  --lh: 1.6;                                    // Altura de línea base
+/* Tipografía y espaciados fluidos con clamp() (min, preferido, máx) */
+--fs-base: clamp(16px, 14px + .4vw, 18px); // Tamaño base de fuente
+--fs-h1: clamp(28px, 22px + 1.6vw, 40px); // Tamaño h1
+--fs-h2: clamp(22px, 18px + 1.2vw, 32px); // Tamaño h2
+--fs-h3: clamp(18px, 16px + .8vw, 24px); // Tamaño h3
+--lh: 1.6; // Altura de línea base
 
-  --space-1: clamp(.5rem, .4rem + .4vw, .75rem); // Escala de espacios 1
-  --space-2: clamp(.75rem, .6rem + .6vw, 1rem);  // Escala de espacios 2
-  --space-3: clamp(1rem, .8rem + 1vw, 1.5rem);   // Escala de espacios 3
+--space-1: clamp(.5rem, .4rem + .4vw, .75rem); // Escala de espacios 1
+--space-2: clamp(.75rem, .6rem + .6vw, 1rem); // Escala de espacios 2
+--space-3: clamp(1rem, .8rem + 1vw, 1.5rem); // Escala de espacios 3
 
-  --radius: 12px;                        // Radio estándar de bordes
+--radius: 12px; // Radio estándar de bordes
 }
-
 
 // -----------------------------------------------------------------------------
 // TIPOGRAFÍA Y BASE
 // -----------------------------------------------------------------------------
 
+/* Clase utilitaria: aplica Poppins SOLO en los contenedores donde la uses */
+.modern-font {
+font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Inter, // Pila con Poppins al frente
+"Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; // Fallbacks seguros
+}
+
 html {
-  scroll-behavior: smooth; // Desplazamiento suave al navegar por anclas
+scroll-behavior: smooth; // Desplazamiento suave al navegar por anclas
 }
 
 body {
-  color: var(--text-color); // Color de texto global
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; // Pila moderna
-  -webkit-font-smoothing: antialiased; // Suavizado (WebKit)
-  -moz-osx-font-smoothing: grayscale;  // Suavizado (Firefox/macOS)
-  background: #fff; // Fondo limpio
-  font-size: var(--fs-base); // Tamaño fluido base
-  line-height: var(--lh);    // Altura de línea base
+color: var(--text-color); // Color de texto global
+font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; // Pila moderna por defecto (Poppins sólo con .modern-font)
+-webkit-font-smoothing: antialiased; // Suavizado (WebKit)
+-moz-osx-font-smoothing: grayscale; // Suavizado (Firefox/macOS)
+background: #fff; // Fondo limpio
+font-size: var(--fs-base); // Tamaño fluido base
+line-height: var(--lh); // Altura de línea base
 }
 
 .container {
-  max-width: var(--container-max); // Limitar ancho para columnas largas (mejor lectura)
+max-width: var(--container-max); // Limitar ancho para columnas largas (mejor lectura)
 }
 
 // Enlace "Saltar al contenido" (aparece al enfocar con Tab)
 .skip-link {
-  position: absolute;      // Posicionado para ocultarlo fuera de pantalla
-  left: -9999px;           // Oculto visualmente
-  top: auto;               // Sin afectar flujo
-  background: #fff;        // Fondo legible
-  color: #000;             // Alto contraste
-  padding: .5rem 1rem;     // Área clicable cómoda
-  border-radius: .5rem;    // Bordes redondeados
-  box-shadow: 0 6px 20px rgba(0,0,0,.12); // Sombra para separarlo
-  z-index: 10000;          // Por encima de la navbar
+position: absolute; // Posicionado para ocultarlo fuera de pantalla
+left: -9999px; // Oculto visualmente
+top: auto; // Sin afectar flujo
+background: #fff; // Fondo legible
+color: #000; // Alto contraste
+padding: .5rem 1rem; // Área clicable cómoda
+border-radius: .5rem; // Bordes redondeados
+box-shadow: 0 6px 20px rgba(0,0,0,.12); // Sombra para separarlo
+z-index: 10000; // Por encima de la navbar
 }
 .skip-link:focus {
-  left: 1rem;              // Al enfocar, aparece en pantalla
-  top: 1rem;               // En la esquina superior
+left: 1rem; // Al enfocar, aparece en pantalla
+top: 1rem; // En la esquina superior
 }
 
 // Enlaces: color principal + subrayado al hover (accesible)
 a {
-  color: var(--brand-primary); // Color del enlace
-  text-decoration: none;       // Sin subrayado por defecto
-  transition: color .15s ease, text-decoration-color .15s ease; // Transiciones
+color: var(--brand-primary); // Color del enlace
+text-decoration: none; // Sin subrayado por defecto
+transition: color .15s ease, text-decoration-color .15s ease; // Transiciones
 
-  &:hover {
-    color: var(--brand-primary-hover);  // Color en hover
-    text-decoration: underline;         // Subrayado en hover
-    text-decoration-color: rgba(13, 110, 253, .45); // Color del subrayado
-  }
+&:hover {
+color: var(--brand-primary-hover); // Color en hover
+text-decoration: underline; // Subrayado en hover
+text-decoration-color: rgba(13, 110, 253, .45); // Color del subrayado
+}
 
-  &:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--brand-primary) 65%, white); // Contorno accesible
-    outline-offset: 2px; // Separación del contorno
-    border-radius: .35rem; // Contorno suavizado
-  }
+&:focus-visible {
+outline: 3px solid color-mix(in srgb, var(--brand-primary) 65%, white); // Contorno accesible
+outline-offset: 2px; // Separación del contorno
+border-radius: .35rem; // Contorno suavizado
+}
 }
 
 // Encabezados: tamaños fluidos y peso fuerte
 h1 {
-  margin-top: var(--space-3); // Margen superior
-  font-weight: 700;           // Negrita
-  font-size: var(--fs-h1);    // Tamaño fluido
-  line-height: 1.2;           // Más compacto
+margin-top: var(--space-3); // Margen superior
+font-weight: 700; // Negrita
+font-size: var(--fs-h1); // Tamaño fluido
+line-height: 1.2; // Más compacto
 }
 h2 {
-  margin-top: var(--space-3);
-  font-weight: 700;
-  font-size: var(--fs-h2);
-  line-height: 1.25;
+margin-top: var(--space-3);
+font-weight: 700;
+font-size: var(--fs-h2);
+line-height: 1.25;
 }
 h3 {
-  margin-top: var(--space-2);
-  font-weight: 700;
-  font-size: var(--fs-h3);
-  line-height: 1.3;
+margin-top: var(--space-2);
+font-weight: 700;
+font-size: var(--fs-h3);
+line-height: 1.3;
 }
 h4, h5, h6 {
-  margin-top: .9rem; // Margen superior para subtítulos
-  font-weight: 600;  // Semi-negrita
+margin-top: .9rem; // Margen superior para subtítulos
+font-weight: 600; // Semi-negrita
 }
 
 // Separador horizontal sutil
 hr {
-  border: 0;                              // Quitar borde por defecto
-  border-top: 1px solid var(--border-color); // Línea tenue
-  margin: 1.5rem 0;                       // Espaciado vertical
+border: 0; // Quitar borde por defecto
+border-top: 1px solid var(--border-color); // Línea tenue
+margin: 1.5rem 0; // Espaciado vertical
 }
 
 // Citas con barra lateral tenue
 blockquote {
-  margin: 1rem 0;                         // Separación vertical
-  padding: .75rem 1rem;                   // Relleno
-  border-left: 4px solid var(--border-color); // Barra lateral
-  color: var(--muted-color);              // Texto atenuado
-  background: #fafafa;                    // Fondo claro
-  border-radius: 6px;                     // Bordes
+margin: 1rem 0; // Separación vertical
+padding: .75rem 1rem; // Relleno
+border-left: 4px solid var(--border-color); // Barra lateral
+color: var(--muted-color); // Texto atenuado
+background: #fafafa; // Fondo claro
+border-radius: 6px; // Bordes
 }
 
 // Imágenes fluidas por defecto
 img {
-  max-width: 100%; // No exceder contenedor
-  height: auto;    // Mantener proporción
-  border-radius: 6px; // Sutil redondeo
+max-width: 100%; // No exceder contenedor
+height: auto; // Mantener proporción
+border-radius: 6px; // Sutil redondeo
 }
-
 
 // -----------------------------------------------------------------------------
 // NAVBAR STICKY + MICRO-INTERACCIONES
 // -----------------------------------------------------------------------------
 
 .main-nav {
-  transition: background-color .25s ease, box-shadow .25s ease; // Transiciones suaves
-  background-color: rgba(255,255,255,.85); // Fondo semitransparente
-  backdrop-filter: saturate(180%) blur(8px); // Efecto cristal (si lo soporta el navegador)
+transition: background-color .25s ease, box-shadow .25s ease; // Transiciones suaves
+background-color: rgba(255,255,255,.85); // Fondo semitransparente
+backdrop-filter: saturate(180%) blur(8px); // Efecto cristal (si lo soporta el navegador)
 }
 .main-nav.is-scrolled {
-  background-color: #fff;                 // Fondo sólido al hacer scroll
-  box-shadow: var(--elevated-shadow);     // Sombra marcada
+background-color: #fff; // Fondo sólido al hacer scroll
+box-shadow: var(--elevated-shadow); // Sombra marcada
 }
 
 // Enlace activo de la navbar (mejor visibilidad)
 .navbar .nav-link.active {
-  font-weight: 600;            // Un poco más de peso
-  text-underline-offset: 4px;  // Separación del subrayado
-  text-decoration: underline;  // Subrayado al activo
+font-weight: 600; // Un poco más de peso
+text-underline-offset: 4px; // Separación del subrayado
+text-decoration: underline; // Subrayado al activo
 }
-
 
 // -----------------------------------------------------------------------------
 // TARJETAS DE ARTÍCULOS (coincide con la clase usada en Articles)
 // -----------------------------------------------------------------------------
 
 .article-card {
-  border: 1px solid #e9ecef;     // Borde suave
-  border-radius: 10px;           // Bordes redondeados
-  transition: transform .15s ease, box-shadow .15s ease; // Animación sutil
+border: 1px solid #e9ecef; // Borde suave
+border-radius: 10px; // Bordes redondeados
+transition: transform .15s ease, box-shadow .15s ease; // Animación sutil
 
-  &:hover {
-    transform: translateY(-2px); // Efecto “levitar” ligero
-    box-shadow: var(--card-shadow); // Sombra suave
-  }
-
-  .card-title {
-    font-weight: 700;   // Título fuerte
-    line-height: 1.25;  // Compacidad
-  }
-
-  .badge {
-    font-size: .72rem;     // Badge discreto
-    padding: .35rem .5rem; // Relleno compacto
-  }
+&:hover {
+transform: translateY(-2px); // Efecto “levitar” ligero
+box-shadow: var(--card-shadow); // Sombra suave
 }
 
+.card-title {
+font-weight: 700; // Título fuerte
+line-height: 1.25; // Compacidad
+}
+
+.badge {
+font-size: .72rem; // Badge discreto
+padding: .35rem .5rem; // Relleno compacto
+}
+}
 
 // -----------------------------------------------------------------------------
 // ESTILOS PARA MARKDOWN (cuando renderizas contenido completo)
@@ -209,65 +217,63 @@ img {
 /* Aplica esta clase al contenedor que recibe [innerHTML]="... | markdown" */
 .markdown-body {
 
-  h1, h2, h3 { margin-top: 1.2rem; font-weight: 700; } // Encabezados del markdown
+h1, h2, h3 { margin-top: 1.2rem; font-weight: 700; } // Encabezados del markdown
 
-  p { line-height: 1.65; margin: .75rem 0; } // Párrafos cómodos
+p { line-height: 1.65; margin: .75rem 0; } // Párrafos cómodos
 
-  ul, ol { padding-left: 1.25rem; margin: .5rem 0 .75rem; } // Listas legibles
+ul, ol { padding-left: 1.25rem; margin: .5rem 0 .75rem; } // Listas legibles
 
-  code {
-    background: var(--inline-code-bg); // Fondo para código inline
-    padding: .15rem .35rem;            // Relleno
-    border-radius: 4px;                // Bordes
-    font-size: .95em;                  // Ligeramente más pequeño
-  }
-
-  pre {
-    background: var(--code-bg); // Fondo bloque
-    color: var(--code-fg);      // Texto bloque
-    padding: .85rem 1rem;       // Relleno
-    border-radius: 8px;         // Bordes
-    overflow: auto;             // Scroll si se desborda
-    line-height: 1.5;           // Altura de línea
-    margin: 1rem 0;             // Separación vertical
-
-    code {
-      background: transparent;  // Sin doble fondo
-      padding: 0;               // Sin padding extra
-      border-radius: 0;         // Sin bordes
-      color: inherit;           // Hereda color
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; // Monoespaciada
-    }
-  }
-
-  img { display: block; margin: .75rem auto; border-radius: 8px; } // Imágenes centradas
-
-  table {
-    width: 100%;                 // Ancho completo
-    border-collapse: collapse;   // Sin huecos
-    margin: 1rem 0;              // Separación vertical
-
-    th, td { border: 1px solid var(--border-color); padding: .5rem .6rem; } // Celdas
-    th { background: #f8f9fa; font-weight: 600; } // Cabeceras
-  }
+code {
+background: var(--inline-code-bg); // Fondo para código inline
+padding: .15rem .35rem; // Relleno
+border-radius: 4px; // Bordes
+font-size: .95em; // Ligeramente más pequeño
 }
 
+pre {
+background: var(--code-bg); // Fondo bloque
+color: var(--code-fg); // Texto bloque
+padding: .85rem 1rem; // Relleno
+border-radius: 8px; // Bordes
+overflow: auto; // Scroll si se desborda
+line-height: 1.5; // Altura de línea
+margin: 1rem 0; // Separación vertical
+
+code {
+  background: transparent;  // Sin doble fondo
+  padding: 0;               // Sin padding extra
+  border-radius: 0;         // Sin bordes
+  color: inherit;           // Hereda color
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; // Monoespaciada
+}
+}
+
+img { display: block; margin: .75rem auto; border-radius: 8px; } // Imágenes centradas
+
+table {
+width: 100%; // Ancho completo
+border-collapse: collapse; // Sin huecos
+margin: 1rem 0; // Separación vertical
+
+th, td { border: 1px solid var(--border-color); padding: .5rem .6rem; } // Celdas
+th { background: #f8f9fa; font-weight: 600; } // Cabeceras
+}
+}
 
 // -----------------------------------------------------------------------------
 // SKELETON LOADERS (efectos de carga elegantes)
 // -----------------------------------------------------------------------------
 
 @keyframes skeleton-pulse {
-  0%   { background-color: #eef1f5; } // Color inicial
-  50%  { background-color: #f5f7fb; } // Pico de la animación
-  100% { background-color: #eef1f5; } // Vuelta al inicio
+0% { background-color: #eef1f5; } // Color inicial
+50% { background-color: #f5f7fb; } // Pico de la animación
+100% { background-color: #eef1f5; } // Vuelta al inicio
 }
 
 .skeleton {
-  animation: skeleton-pulse 1.2s ease-in-out infinite; // Pulso infinito
-  border-radius: .5rem; // Bordes suaves
+animation: skeleton-pulse 1.2s ease-in-out infinite; // Pulso infinito
+border-radius: .5rem; // Bordes suaves
 }
-
 
 // -----------------------------------------------------------------------------
 // PEQUEÑOS AJUSTES / UTILIDADES
@@ -278,22 +284,22 @@ img {
 /* Botones: micro-interacción al presionar y foco accesible */
 button:active { transform: scale(.98); } // Efecto de "click" sutil
 button:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--brand-primary) 45%, white); // Contorno visible
-  outline-offset: 2px; // Separación del contorno
-  border-radius: .35rem; // Suaviza el contorno
+outline: 3px solid color-mix(in srgb, var(--brand-primary) 45%, white); // Contorno visible
+outline-offset: 2px; // Separación del contorno
+border-radius: .35rem; // Suaviza el contorno
 }
 
 /* Usuarios con preferencia de reducir movimiento: desactiva animaciones/transiciones */
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: .01ms !important;        // Reduce animaciones
-    animation-iteration-count: 1 !important;     // Solo una repetición
-    transition-duration: .01ms !important;       // Sin transiciones
-    scroll-behavior: auto !important;            // Desactiva scroll suave
+    animation-duration: .01ms !important; // Reduce animaciones
+    animation-iteration-count: 1 !important; // Solo una repetición
+    transition-duration: .01ms !important; // Sin transiciones
+    scroll-behavior: auto !important; // Desactiva scroll suave
   }
 }
 
 /* Pequeño refuerzo de subrayado en pantallas grandes */
 @media (min-width: 992px) {
-  a:hover { text-decoration-thickness: 2px; } // Subrayado más grueso al hover
+a:hover { text-decoration-thickness: 2px; } // Subrayado más grueso al hover
 }
