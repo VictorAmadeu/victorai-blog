@@ -1,209 +1,170 @@
 # VictorAI Blog
 
-VictorAI Blog es un proyecto de blog personal desarrollado con Angular 19. Está pensado como un ejercicio práctico para recorrer el roadmap de aprendizaje en inteligencia artificial y desarrollo web. Utiliza Supabase como backend para almacenar artículos, categorías y suscriptores a la newsletter, y se estiliza con Bootstrap para obtener un diseño responsivo.
-
-El sitio se construye como una Single Page Application (SPA) que puede desplegarse en Vercel u otros proveedores de hosting estático[1]. Además de posts, incluye una sección de ejercicios de Python con código resaltado y salidas esperadas.
+VictorAI Blog es un proyecto de blog personal desarrollado como ejercicio de aprendizaje de inteligencia artificial y desarrollo web. La aplicación está construida con Angular 19 en modo standalone, se estiliza con Bootstrap 5 y utiliza Supabase como backend para almacenar artículos, categorías, mensajes de contacto y suscriptores a la newsletter. El diseño se adapta a dispositivos móviles y puede desplegarse como una Single Page Application (SPA) en Vercel u otro servicio de hosting estático.
 
 ## Características principales
 
-### Arquitectura Angular standalone
+### Arquitectura Angular moderna
 
-El proyecto usa Angular 19 con standalone components en lugar de NgModules, lo que simplifica la modularidad y la carga perezosa. El archivo de rutas `app.routes.ts` define cada vista: la ruta raíz ('') para la portada, `/articulos` para el listado de posts, `/categorias` y `/categorias/:slug` para las categorías (carga perezosa), `/sobre‑mi` para una página estática y `/python//python/:id` para los ejercicios de Python[2].
-
-Los estilos globales y scripts de Bootstrap se declaran en `angular.json`: se incluye `bootstrap.min.css` y el bundle de JavaScript de Bootstrap, así como los propios estilos en `src/styles.scss`[3].
-
-El uso de componentes standalone se observa en todos los archivos de páginas (HomeComponent, ArticlesComponent, etc.), que importan sólo los módulos que necesitan y se declaran con `standalone: true`[4]. Esto reduce la complejidad y mejora los tiempos de carga.
+- **Componentes standalone:** la aplicación se organiza mediante componentes standalone, sin necesidad de NgModules. Las rutas se definen en `src/app/app.routes.ts` y admiten carga lazy para categorías y páginas de detalle.
+- **Transiciones y accesibilidad:** el componente raíz (`app.component`) implementa animaciones entre rutas, un enlace de “saltar al contenido”, un botón flotante “volver arriba” y navegación accesible con teclado.
+- **UI reutilizable:** se incluyen componentes reutilizables como `ui-card`, `ui-chip`, `ui-skeleton` y `ui-scroll-top` para tarjetas, chips de categorías, esqueletos de carga y el botón “ir al inicio”.
 
 ### Gestión de datos con Supabase
 
-En `supabase.service.ts` se inicializa un cliente de Supabase usando las credenciales definidas en `environment`. Se configuran cabeceras globales para las peticiones REST y se evita la persistencia de sesión, ya que sólo se utilizan las APIs públicas[5].
+- **Servicio unificado:** `src/app/supabase.service.ts` encapsula toda la comunicación con Supabase. Utiliza la API REST (PostgREST) para consultas y el SDK oficial `@supabase/supabase-js` para insertar mensajes sin leer la fila creada.
 
-El servicio expone métodos para diversas operaciones: `addSubscriber()` inserta un correo en la tabla `newsletter_subscribers` y maneja errores, como la violación de unicidad del campo `email`[6]; `getPosts()` y `getLatestPosts()` obtienen la lista de artículos ordenada por fecha[7]; `addPost()` permite añadir un artículo nuevo, incluso con imagen de portada[8]; `getCategories()` devuelve las categorías ordenadas alfabéticamente[9]; `getCategoryBySlug()` y `getPostsByCategory()` recuperan los datos de una categoría concreta y sus artículos[10].
+#### Tablas utilizadas:
+
+- **posts:** artículos del blog con título, contenido en Markdown, slug de categoría, portada y fecha de creación.
+- **categories:** categorías con `name` y `slug`.
+- **contact_messages:** mensajes enviados desde el formulario de contacto.
+- **newsletter_subscribers:** suscriptores a la newsletter (solo se almacena el correo).
+
+#### Operaciones implementadas:
+
+- Obtener los últimos artículos y listar hasta N entradas.
+- Crear un artículo nuevo desde el front (`addPost()`), incluyendo portada y slug de categoría.
+- Listar categorías en orden alfabético y obtener una categoría por slug.
+- Listar artículos pertenecientes a una categoría.
+- Añadir suscriptores a la newsletter y listar suscriptores.
+- Enviar mensajes de contacto sin recibir datos de vuelta (`sendContactMessage()`).
 
 ### Sección de artículos
 
-El componente Home consulta los últimos posts mediante `getLatestPosts()` y los muestra en tarjetas en la portada[11]. Incluye también un formulario de suscripción a la newsletter que valida, normaliza el email y muestra mensajes de éxito o error (por ejemplo, cuando el correo ya está suscrito)[6].
+#### Home
 
-El componente Articles carga hasta 50 entradas desde Supabase y emplea el pipe `stripMarkdown` para generar un extracto limpio sin sintaxis Markdown[12]. Los posts se listan con la fecha de creación y un badge con el slug de la categoría.
+La portada muestra las últimas entradas (dos por defecto), con tarjetas que incluyen el título, fecha y un extracto del contenido. Se utiliza una imagen de portada si está presente; de lo contrario, se muestra un placeholder local.
+
+#### Listado de artículos
+
+La ruta `/articulos` carga hasta 50 posts y permite buscar por texto y filtrar por categoría en el front. El pipe `filterPosts` preserva el tipo de entrada y aplica búsquedas sobre título, contenido o slug de categoría.
+
+#### Extractos limpios
+
+El pipe `stripMarkdown` elimina la sintaxis de Markdown para generar extractos legibles en las tarjetas.
 
 ### Categorías
 
-`Categories` se carga de forma perezosa. El componente `CategoriesComponent` realiza la consulta a Supabase para obtener todas las categorías y gestiona los estados de carga y error[13].
+#### Carga perezosa
 
-En `CategoryPosts`, el slug de la URL se lee con `ActivatedRoute` y se realizan dos peticiones en paralelo: una para obtener el nombre real de la categoría y otra para sus artículos. Ambos resultados se combinan y se actualiza la vista con el título y los posts[14]. La utilidad `slugToTitle()` convierte el slug en un título legible, manejando conectores y acrónimos[15].
+Las rutas `/categorias` y `/categorias/:slug` se importan sólo cuando el usuario las visita.
+
+#### Listado
+
+`CategoriesComponent` muestra todas las categorías disponibles.
+
+#### Detalle de categoría
+
+`CategoryPostsComponent` lee el slug de la URL, consulta en paralelo el nombre de la categoría y sus artículos, convierte el slug en un título legible (capitaliza, corrige acentos y acrónimos) y renderiza el contenido de cada post mediante el pipe `markdown`.
+
+### Página “Sobre mí”
+
+La ruta `/sobre-mi` muestra una página estática con información personal sobre el autor, su experiencia, proyectos destacados, formación, tecnologías dominadas e idiomas. El contenido se define en `src/app/pages/about/about.component.html` y utiliza la misma tipografía y estilos globales que el resto del sitio.
 
 ### Sección de Python
 
-La carpeta `src/assets/python-exercises` contiene un catálogo JSON (`exercises.json`) con ejercicios de Python. Cada elemento define un `id`, `titulo`, `descripcion` y una lista de archivos `.py` con su ruta y salida esperada[16].
+El directorio `src/assets/python-exercises` contiene un catálogo JSON (`exercises.json`) con ejercicios de Python. Cada entrada incluye un `id`, `titulo`, `descripcion`, y una lista de archivos `.py` con su ruta y salida esperada.
 
-`PythonExercisesService` lee ese catálogo mediante `HttpClient` y ofrece métodos `listar()`, `obtener(id)` y `leerArchivoText()`, que devuelve el contenido de cada archivo como texto plano[17][18].
+#### La sección Python ofrece:
 
-`PythonComponent` lista los ejercicios disponibles y muestra un spinner mientras se cargan[19].
+- **Listado de ejercicios (`/python`):** `PythonComponent` lee el catálogo mediante `PythonExercisesService.listar()` y muestra tarjetas con título y descripción.
+- **Detalle de ejercicio (`/python/:id`):** `PythonDetailComponent` obtiene un ejercicio por ID, lee sus archivos `.py` en paralelo mediante `leerArchivoText()`, resalta el código con `ngx-highlightjs` y muestra la salida esperada debajo de cada fragmento.
 
-`PythonDetailComponent` obtiene un ejercicio por `id`, lee todos sus archivos `.py` en paralelo mediante `forkJoin` y utiliza la directiva `[highlight]` de `ngx-highlightjs` para resaltar el código. También muestra la salida esperada debajo de cada código[20].
+### Markdown seguro y resaltado de código
 
-### Renderizado seguro de Markdown
+- El pipe `markdown` convierte contenido en Markdown a HTML usando `marked` y lo sanea con `DOMPurify` para prevenir XSS antes de inyectarlo en la vista.
+- El resaltado de código se realiza con Highlight.js y el módulo `ngx-highlightjs`, utilizando el tema GitHub.
 
-El pipe `markdown` transforma el contenido en Markdown a HTML y lo sanitiza con DOMPurify para prevenir ataques XSS[21]. El motor Markdown configurado (`marked`) se ejecuta de manera síncrona y activa compatibilidad con GitHub Flavored Markdown[22].
+### Formulario para Enviar Feedback
 
-Para mostrar extractos, el pipe `stripMarkdown` elimina bloques de código, imágenes, enlaces y símbolos de Markdown, devolviendo texto plano limpio[23].
+- **Contacto:** la página principal incluye un formulario de contacto que solicita nombre, correo, asunto y mensaje. El envío se realiza a la tabla `contact_messages` mediante `sendContactMessage()`. Tras el envío se limpian los campos y se muestra un mensaje de éxito; en caso de error se informa al usuario.
 
-### Newsletter
+### Experiencia de usuario
 
-En la portada se ofrece un formulario para suscribirse a la newsletter. El método `addSubscriber()` registra el email en Supabase y gestiona casos como duplicados (código de error `23505`) mostrando mensajes claros al usuario[6].
+- **Navbar accesible:** la barra de navegación es responsiva, se adapta a móviles con menú hamburguesa y se cierra automáticamente tras tres segundos o al pulsar una opción. Incluye enlaces a Inicio, Artículos, Categorías, Sobre mí y un enlace que desplaza suavemente al formulario de contacto.
+- **Animaciones:** se definen transiciones suaves entre páginas usando Angular Animations.
+- **Botón “Volver arriba”:** el componente `UiScrollTopComponent` muestra un botón flotante que aparece al hacer scroll y desplaza la página al inicio con un efecto suave.
+- **Skeleton loaders:** durante la carga de datos se muestran esqueletos animados para mejorar la percepción de rendimiento.
+- **Diseño y estilos:** los estilos globales (`styles.scss`) definen variables CSS para colores, tamaños, espaciados y sombras. Se importa la fuente “Poppins” desde Google Fonts y el tema de Highlight.js. Además se incluyen estilos para elementos Markdown, botones, enlaces accesibles y se respeta la preferencia de reducción de movimiento.
 
 ### Pruebas y calidad
 
-El proyecto está configurado para ejecutar pruebas unitarias con Karma y Jasmine. Se pueden lanzar con:
+El proyecto está configurado para ejecutar pruebas unitarias con Karma y Jasmine. Puedes lanzarlas con:
 
 ```bash
 npm test -- --watch=false --browsers=ChromeHeadless
 ```
 
-[24]
-
 ### Despliegue como SPA
 
-El archivo `vercel.json` indica a Vercel que trate la aplicación como una SPA. Cualquier ruta que no coincida con un archivo físico se redirige a `index.html`[1].
+El archivo `vercel.json` configura Vercel para servir la aplicación como SPA, redirigiendo todas las rutas que no correspondan a un archivo físico a `index.html`. Después de compilar (`npm run build`), los artefactos de producción se encuentran en `dist/victorai-blog` y pueden desplegarse en cualquier hosting estático.
 
-Tras compilar el proyecto con `npm run build`, los artefactos de producción se encuentran en el directorio `dist/victorai-blog`[25]. Ese directorio puede desplegarse en cualquier hosting estático.
+### Requisitos previos
 
-## Requisitos previos
+- Node.js 18 o superior y npm 9 o superior.
+- (Opcional) CLI de Angular instalada globalmente: `npm install -g @angular/cli`.
 
-- Node.js versión 18 o superior y npm 9 o superior[26].
-- (Opcional) CLI de Angular instalado globalmente: `npm install -g @angular/cli`[27].
+### Instalación
 
-## Instalación
-
-Clona este repositorio y accede a su directorio.
-
-Ejecuta `npm install` para instalar las dependencias necesarias[28].
-
-## Configuración de entornos
-
-Para los builds de producción es necesario definir las siguientes variables de entorno antes de compilar:
-
-- `SUPABASE_URL`: URL de tu proyecto Supabase.
-- `SUPABASE_KEY`: clave pública (anon) del proyecto.
-
-El script `scripts/generate-env.mjs` se ejecuta automáticamente antes de la compilación (`npm run build`) y genera `src/environments/environment.prod.ts` con estos valores[29].
-
-## Desarrollo
-
-Para levantar un servidor de desarrollo con recarga automática ejecuta:
+- Clona este repositorio y accede a su directorio.
+- Ejecuta `npm install` para instalar las dependencias.
+- Copia el archivo `.env.example` (si existe) o define las variables `SUPABASE_URL` y `SUPABASE_KEY` en tu entorno de shell. Estos valores se utilizarán para generar el fichero `src/environments/environment.prod.ts` en el paso de build.
+- Para iniciar el servidor de desarrollo con recarga automática, ejecuta:
 
 ```bash
 npm start
 ```
 
-A continuación abre `http://localhost:4200` en tu navegador favorito[30].
+- Abre <http://localhost:4200> en tu navegador.
 
-## Compilación y despliegue
+### Configuración de entornos
 
-Ejecuta `npm run build` para generar la versión optimizada de la aplicación en `dist/`[25].
+Para los builds de producción es necesario definir estas variables de entorno:
 
-Puedes desplegar el contenido de `dist/victorai-blog` en cualquier hosting estático. Si usas Vercel, el archivo `vercel.json` ya configura el comportamiento de SPA para que todas las rutas apunten a `index.html`[1].
+- **SUPABASE_URL:** URL de tu proyecto Supabase.
+- **SUPABASE_KEY:** clave pública (“anon”) de tu proyecto.
 
-## Pruebas
+Antes de compilar (`npm run build`), se ejecuta el script `scripts/generate-env.mjs` que crea `src/environments/environment.prod.ts` con estas variables. No se deben commitear claves secretas; para desarrollo local se utiliza `src/environments/environment.ts` con un proyecto Supabase de ejemplo y se recomienda reemplazarlo por tus propios datos.
 
-Lanza las pruebas unitarias ejecutando:
+### Compilación y despliegue
 
-```bash
-npm test -- --watch=false --browsers=ChromeHeadless
-```
+- Ejecuta `npm run build` para generar la versión optimizada de la aplicación en `dist/victorai-blog`.
+- Sube el contenido de `dist/victorai-blog` a tu proveedor de hosting estático preferido. Para Vercel, el archivo `vercel.json` ya indica que todas las rutas se redirijan a `index.html`.
 
-Esto ejecutará las pruebas definidas en el proyecto usando Karma y Jasmine[24].
-
-## Estructura del proyecto
+### Estructura del proyecto
 
 ```
 src/
   app/
-    pages/           Componentes de páginas (home, artículos, categorías, python…)
-    shared/          Pipes y utilidades (markdown, stripMarkdown)
-    services/        Servicios (Supabase, ejercicios de Python)
+    pages/           Componentes de páginas (home, artículos, categorías, python, sobre-mi)
+    shared/          Pipes (markdown, stripMarkdown, filterPosts) y utilidades
+    services/        Servicios (SupabaseService, PythonExercisesService)
+    ui/              Componentes de interfaz reutilizables (card, chip, skeleton, scroll-top)
   assets/            Recursos estáticos (imágenes, ejercicios de Python)
-  environments/      Configuración por entorno
+  environments/      Configuración de entornos (desarrollo)
+scripts/             Scripts de soporte (generate-env.mjs)
 ```
 
-Esta estructura sigue las buenas prácticas de Angular y aprovecha los componentes standalone, lo que facilita la modularidad y la carga perezosa.
+### Tecnologías utilizadas
 
-## Tecnologías utilizadas
+- **Angular 19:** framework frontend para construir la SPA.
+- **Supabase:** base de datos como servicio con API REST y SDK de JavaScript.
+- **Bootstrap 5 y Bootstrap Icons:** estilización y componentes responsivos.
+- **Highlight.js y ngx-highlightjs:** resaltado de código para los ejercicios de Python.
+- **Marked y DOMPurify:** transformación y saneamiento de Markdown.
+- **RxJS:** manejo de flujos asíncronos y combinaciones de peticiones.
+- **SCSS:** estilos globales con variables, temas y componentes personalizados.
 
-- Angular 19: framework frontend empleado para la construcción de la SPA[31].
-- Supabase: base de datos como servicio y API REST para almacenar posts, categorías y suscriptores[5].
-- Bootstrap 5: biblioteca de estilos importada desde `node_modules`[3].
-- Highlight.js y `ngx-highlightjs`: resaltado de código, especialmente en la sección de ejercicios de Python[32].
-- Marked y DOMPurify: conversión y saneamiento de Markdown[21].
-- RxJS: manejo de flujos asíncronos y combinaciones de peticiones, como la lectura paralela de archivos Python[20].
+### Contribución
 
-## Contribución
+Se agradecen contribuciones de todo tipo: corrección de errores, mejoras en la estructura, nuevos artículos o ejercicios de Python. Para añadir nuevas entradas a la base de datos, puedes utilizar `SupabaseService.addPost()`, que permite crear un artículo con título, contenido, slug de categoría y URL de portada. Para incluir ejercicios de Python, edita `src/assets/python-exercises/exercises.json` y añade las rutas correspondientes en el directorio `assets/python-exercises`. Asegúrate de incluir pruebas cuando apliquen y de seguir las guías de codificación de Angular.
 
-Se agradecen contribuciones de todo tipo: corrección de errores, mejoras en la estructura, nuevos artículos o ejercicios de Python. Si deseas añadir nuevas entradas a la base de datos, puedes emplear el método `addPost()` de `SupabaseService`, que permite crear un post con título, contenido, slug de categoría y URL de portada[8]. Para incluir nuevos ejercicios de Python, edita el archivo `src/assets/python-exercises/exercises.json` y añade las rutas correspondientes en `assets/python-exercises`.
+Si deseas colaborar, abre un pull request explicando claramente los cambios propuestos.
 
-Por favor, abre un pull request con una descripción detallada de los cambios y su motivación.
+### Licencia
 
-## Licencia
+Este proyecto actualmente no especifica una licencia. Todos los derechos están reservados. Si deseas reutilizar o distribuir el código, considera añadir una licencia (por ejemplo MIT, GPL, etc.) que determine los permisos y restricciones.
 
-Actualmente este proyecto no especifica una licencia[33]. Esto implica que todos los derechos están reservados. Si deseas reutilizar o distribuir el código, considera incluir una licencia (por ejemplo MIT, GPL, etc.) que determine los permisos y restricciones.
 
-[1] vercel.json
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/vercel.json
-
-[2] app.routes.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/app.routes.ts
-
-[3] angular.json
-
-https://github.com/VictorAmadeu/victorai-blog/blob/1d3f8a42dc14e342ee23bd6234b556548b39e118/angular.json
-
-[4] [6] [11] home.component.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/pages/home/home.component.ts
-
-[5] [7] [8] [9] [10] supabase.service.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/1d3f8a42dc14e342ee23bd6234b556548b39e118/src/app/supabase.service.ts
-
-[12] articles.component.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/pages/articles/articles.component.ts
-
-[13] categories.component.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/pages/categories/categories.component.ts
-
-[14] [15] category-posts.component.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/pages/category-posts/category-posts.component.ts
-
-[16] exercises.json
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/assets/python-exercises/exercises.json
-
-[17] [18] python-exercises.service.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/services/python-exercises.service.ts
-
-[19] python.component.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/pages/python/python.component.ts
-
-[20] [32] python-detail.component.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/pages/python-detail/python-detail.component.ts
-
-[21] [22] markdown.pipe.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/shared/pipes/markdown.pipe.ts
-
-[23] strip-markdown.pipe.ts
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/src/app/shared/pipes/strip-markdown.pipe.ts
-
-[24] [25] [26] [27] [28] [29] [30] [31] [33] README.md
-
-https://github.com/VictorAmadeu/victorai-blog/blob/main/README.md
 
